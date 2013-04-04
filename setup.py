@@ -1,13 +1,9 @@
 from setuptools import setup, find_packages
-import os
-
-ldesc = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 
 setup(
     name='archversion',
     version=0,
     description='Archlinux Version Controller',
-    long_description=ldesc,
     author='Sébastien Luttringer',
     license='GPL2',
     install_requires = ['xdg'],
