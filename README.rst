@@ -8,12 +8,30 @@ INTRODUCTION
 or *AUR* [#]_ version.
 It can be used by Dev and TUs to check if new release of their package are available.
 
+HOW TO USE IT
+=============
+The first thing to do is to define a list of package to track by creating a file
+~/.config/archversion.conf. This file look like an old fashioned INI file.
 
-EXAMPLES
-========
-*archversion -d* will only display version which differ with cache.
-*archversion -n* will only display new verions.
-*archversion -nd* will display new version not in cache (useful for mail report).
+You can find a nice example of this file in misc directory.
+
+Then you can run:
+*archversion check -d* to only display version which differ with cache.
+*archversion check -n* to only display new verions.
+*archversion check -nd* to display new versions not in cache.
+
+Of course you can add the last one in a cron job to get a daily report of which
+packages need updates.
+
+
+COMPARING MODES
+===============
+*archversion* allow you to compare version against differents things, not only
+official Archlinux repository.
+You can compare upstream version against:
+- An Archlinux package
+- An AUR package
+- A stored value
 
 
 DEPENDENCIES
