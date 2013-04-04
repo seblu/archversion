@@ -1,0 +1,137 @@
+#!/usr/bin/python
+# coding: utf-8
+
+# archversion - Archlinux Version Controller
+# Copyright © 2012 Sébastien Luttringer
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+'''Archlinux Version Controller'''
+
+from archversion.config import BaseConfigFile
+from archversion.controller import VersionController
+from archversion.database import JsonDatabase
+from archversion.error import BaseError, MissingConfigFile
+from archversion.error import ERR_FATAL, ERR_ABORT, ERR_UNKNOWN
+from archversion import VERSION, DEFAULT_CONFIG_FILENAME, DEFAULT_CACHE_FILENAME
+from collections import OrderedDict
+import argparse
+import logging
+
+def parse_argv():
+    '''Parse command line arguments'''
+    p_main = argparse.ArgumentParser()
+    p_main.add_argument("--version", action="version",
+                        version="%(prog)s version " + VERSION)
+    p_main.add_argument("--debug", action="store_true",
+                        help="debug mode")
+    p_main.add_argument("-c", "--config", default=None,
+                        help="config file path")
+    p_main.add_argument("-C", "--cache", default=None,
+                        help="cache file path")
+    sp_main = p_main.add_subparsers()
+    # check parser
+    p_check = sp_main.add_parser("check", help="check packages versions")
+    p_check.add_argument("-c", "--diff-cache", action="store_true",
+                         help="doesn't display cached versions")
+    p_check.add_argument("-n", "--diff-new", action="store_true",
+                         help="only display new versions")
+    p_check.add_argument("-s", "--sort", action="store_true",
+                         help="sort packages by name")
+    p_check.add_argument("-S", "--no-cache", action="store_true",
+                         help="don't save version in cache")
+    p_check.add_argument("packages", nargs='*',
+                         help="only check this packages")
+    p_check.set_defaults(func=command_check)
+    # list parser
+    p_list = sp_main.add_parser("list", help="list various informations")
+    p_list.add_argument("-s", "--sort", action="store_true",
+                        help="sort listing")
+    p_list.add_argument("what", choices=("config", "cache", "modes"),
+                        help="config: list configured packages. "
+                        "cache: list packages in cache. "
+                        "modes: list comparaison modes. ")
+    p_list.set_defaults(func=command_list)
+    return p_main.parse_args()
+
+def command_check(args, vctrl):
+    '''Handle check command call'''
+    # filter packages
+    if len(args.packages) > 0:
+        for pkg in list(vctrl.packages):
+            if pkg not in args.packages:
+                vctrl.packages.pop(pkg, None)
+    # sort packages if asked
+    if args.sort:
+        vctrl.packages = OrderedDict(sorted(vctrl.packages.items(),
+                                            key=lambda t: t[0]))
+    # start checking
+    try:
+        vctrl.print_versions(args.diff_new, args.diff_cache)
+    finally:
+        # save version database
+        if not args.no_cache:
+            vctrl.cache.save(args.cache, DEFAULT_CACHE_FILENAME)
+
+def command_list(args, vctrl):
+    '''Handle list command call'''
+    # sort if asked
+    if args.sort:
+        # sort packages
+        vctrl.packages = OrderedDict(sorted(vctrl.packages.items(),
+                                            key=lambda t: t[0]))
+        # sort cache
+        vctrl.cache = OrderedDict(sorted(vctrl.cache.items(),
+                                         key=lambda t: t[0]))
+    # call the right action
+    if args.what == "config":
+        vctrl.print_names()
+    elif args.what == "cache":
+        vctrl.print_cache()
+    elif args.what == "modes":
+        vctrl.print_modes()
+
+def main():
+    '''Program entry point'''
+    try:
+        # parse command line
+        args = parse_argv()
+        # set global debug mode
+        if args.debug:
+            logging.getLogger().setLevel(logging.DEBUG)
+        # load configuration
+        packages = BaseConfigFile(args.config, DEFAULT_CONFIG_FILENAME)
+        # load cache database
+        cachedb = JsonDatabase()
+        cachedb.load(args.cache, DEFAULT_CACHE_FILENAME)
+        # load checking controller
+        vctrl = VersionController(packages, cachedb)
+        # call command function
+        return args.func(args, vctrl)
+    except KeyboardInterrupt:
+        exit(ERR_ABORT)
+    except MissingConfigFile:
+        logging.error("Configuration file is missing. "
+                      "Please create it before!")
+        exit(ERR_FATAL)
+    except BaseError as exp:
+        logging.error("Unknown error. Please report it.")
+        logging.error(exp)
+        exit(ERR_UNKNOWN)
+
+if __name__ == '__main__':
+    main()
+
+# vim:set ts=4 sw=4 et ai:

@@ -1,0 +1,7 @@
+*.pyc
+.*.swp
+*~
+TODO
+test
+tags
+PKGBUILD
