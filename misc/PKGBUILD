@@ -11,6 +11,7 @@ depends=('python' 'python-xdg' 'bash')
 
 prepare() {
   cd "$startdir/.."
+  ./configure
   make dist
   mv -f $pkgname-$pkgver.tar.gz "$srcdir"
   cd "$srcdir"
