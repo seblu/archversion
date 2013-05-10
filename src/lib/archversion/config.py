@@ -46,6 +46,5 @@ class BaseConfigFile(OrderedDict):
         logging.debug("loading config file at: %s" % self.path)
         self._configparser = RawConfigParser()
         self._configparser.read(self.path)
-        self.config = OrderedDict()
         for name in self._configparser.sections():
-            self.config[name] = OrderedDict(self._configparser.items(name))
+            self[name] = OrderedDict(self._configparser.items(name))
