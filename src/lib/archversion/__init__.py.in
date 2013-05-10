@@ -24,9 +24,6 @@ import logging
 # Init log systems
 logging.basicConfig(format="%(levelname)s: %(message)s")
 
-# Annouced version
-VERSION = "0"
-
 # Stored list of packagas we want to track
 DEFAULT_CONFIG_FILENAME = "archversion.conf"
 
@@ -34,4 +31,4 @@ DEFAULT_CONFIG_FILENAME = "archversion.conf"
 DEFAULT_CACHE_FILENAME = "archversion.cache"
 
 # user agent using with http request
-USER_AGENT = "archversion v%s" % VERSION
+USER_AGENT = "archversion v@VERSION@"

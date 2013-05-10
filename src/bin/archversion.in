@@ -25,7 +25,7 @@ from archversion.controller import VersionController
 from archversion.database import JsonDatabase
 from archversion.error import BaseError, MissingConfigFile
 from archversion.error import ERR_FATAL, ERR_ABORT, ERR_UNKNOWN
-from archversion import VERSION, DEFAULT_CONFIG_FILENAME, DEFAULT_CACHE_FILENAME
+from archversion import DEFAULT_CONFIG_FILENAME, DEFAULT_CACHE_FILENAME
 from collections import OrderedDict
 import argparse
 import logging
@@ -34,7 +34,7 @@ def parse_argv():
     '''Parse command line arguments'''
     p_main = argparse.ArgumentParser()
     p_main.add_argument("--version", action="version",
-                        version="%(prog)s version " + VERSION)
+                        version="%(prog)s v@VERSION@")
     p_main.add_argument("--debug", action="store_true",
                         help="debug mode")
     p_main.add_argument("-c", "--config", default=None,
