@@ -64,7 +64,11 @@ def parse_argv():
                         "cache: list packages in cache. "
                         "modes: list comparaison modes. ")
     p_list.set_defaults(func=command_list)
-    return p_main.parse_args()
+    namespace = p_main.parse_args()
+    # Ensure subparser was choosen
+    if "func" not in namespace:
+        p_main.error("missing argument")
+    return namespace
 
 def command_check(args, vctrl):
     '''Handle check command call'''
