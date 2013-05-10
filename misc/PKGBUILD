@@ -1,0 +1,31 @@
+# Maintainer: Sébastien Luttringer
+
+pkgname=archversion
+pkgver=$(cd "$startdir/.."; ./bootstrap; ./configure -V|sed -n 's/archversion configure //p')
+pkgrel=1
+pkgdesc='Archlinux Version Controller'
+arch=('any')
+url='https://github.com/seblu/archversion'
+license=('GPL2')
+depends=('python' 'python-xdg' 'bash')
+
+prepare() {
+  cd "$startdir/.."
+  make dist
+  mv -f $pkgname-$pkgver.tar.gz "$srcdir"
+  cd "$srcdir"
+  tar xf $pkgname-$pkgver.tar.gz
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make install DESTDIR="$pkgdir"
+}
+
+# vim:set ts=2 sw=2 et:
