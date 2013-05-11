@@ -50,6 +50,7 @@ DEPENDENCIES
 ============
 - Python 3.x [#]_
 - PyXDG [#]_
+- PyALPM [#]_
 
 
 SOURCES
@@ -73,5 +74,6 @@ LINKS
 .. [#] http://aur.archlinux.org/
 .. [#] http://python.org/download/releases/
 .. [#] http://freedesktop.org/wiki/Software/pyxdg
+.. [#] https://projects.archlinux.org/users/remy/pyalpm.git
 .. [#] https://github.com/seblu/archversion/
 .. [#] http://www.gnu.org/licenses/gpl-2.0.html
