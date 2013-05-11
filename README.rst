@@ -2,24 +2,33 @@
 ArchVersion
 ===========
 
+
 INTRODUCTION
 ============
-*archversion* is an upstream version controller against current *Archlinux* [#]_
-or *AUR* [#]_ version.
-It can be used by Dev and TUs to check if new release of their packages are available.
+*archversion* is an upstream version of packages tracker against
+- the *Archlinux* web site [#]_;
+- the *Archlinux* User Repository [#]_;
+- a local pacman databases;
+- a local abs sync;
+- an ad-hoc local cache;
+- nothing.
+
+It targets Devs and TUs to help them to stay informed of new release of their packages.
+It can also be used by AUR maintainers to track update for their packages.
+
 
 HOW TO USE IT
 =============
 The first thing to do is to define a list of packages to track by creating a file
 ~/.config/archversion.conf. The file content looks like an old fashioned INI file.
 
-The following example allow to check the last version of acpid2 against archlinux
+The following example allow to check the last version of acpid against archlinux
 official repositories
 
 |  [acpid]
 |  url = http://sourceforge.net/projects/acpid2/files/
 
-You can find a more complete example in the misc directory.
+You can find more complete examples in the misc/ directory.
 
 Basically, you can run:
 *archversion check -d* to only display version which differ with cache.
@@ -38,12 +47,46 @@ webpage and search for well-known pattern. And then compare it to the reference.
 
 COMPARING MODES
 ===============
-*archversion* allow you to compare version against different references, not only
-official Archlinux repository.
-You can compare upstream version against:
-- An Archlinux package
-- An AUR package
-- A cached value
+
+pacman
+------
+This mode compare a remote upstream version against a local package version from
+pacman databases.
+This software is not responsible of syncing pacman databases. Please do it yourself.
+This mode is recommended.
+
+archweb
+-------
+This mode compare a remote upstream version against a remote package version
+on *www.archlinux.org*.
+Getting version is done using the json ouput of packages pages.
+Unfortunatly, Archweb doesn't offer a RPC, so find the right URL for a package
+need a lot of call. As a consequency it's slow and load the archlinux servers.
+So, I recommend to avoid using this mode in favour of pacman mode!
+
+aur
+---
+This mode compare a remomte upstream version against a remote package version
+from the *Archlinux User Repository*.
+AUR provides a JSON-RPC which allow to easily query about packages.
+
+abs
+---
+This mode compare a remote upstream version against a local package version from
+a synced ABS filesystem tree.
+This is not responsible of syncing ABS tree. Please do it yourself.
+This is **DANGEROUS** because PKGBUILD are *partially* executed to guess the package version!
+So, prefer pacman mode!
+
+cache
+-----
+This mode compare a remote upstream version against a local cached value from a
+previous call. This mode could be called memory.
+It can be useful to check package upgrades without having a package in repository.
+
+none
+----
+This mode is a fake one, it only retrieves upstream version without any comparaison.
 
 
 DEPENDENCIES
