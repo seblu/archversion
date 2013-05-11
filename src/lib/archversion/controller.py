@@ -42,7 +42,7 @@ class VersionController(object):
         # populate compare table
         # need to be done manually to avoid get_upstream to be in
         self.compare_table = {
-            "archlinux": self.get_version_archlinux,
+            "archweb": self.get_version_archweb,
             "aur": self.get_version_aur,
             "cache": self.get_version_cache,
             "none": self.get_version_none
@@ -87,12 +87,12 @@ class VersionController(object):
         assert(False)
 
     @staticmethod
-    def get_version_archlinux(name, value):
-        '''Return archlinux version'''
-        logging.debug("Get archlinux version")
+    def get_version_archweb(name, value):
+        '''Return archweb version'''
+        logging.debug("Get archweb version")
         # if arch is specified
         archs = value.get("arch", "x86_64,i686,any").split(",")
-        # if archlinux repository is specified
+        # if archweb repository is specified
         repos = value.get("repo",
                           "community-testing,community,testing,extra,core"
                           ).split(",")
@@ -109,11 +109,11 @@ class VersionController(object):
                     url_fd = urlopen(url_req, timeout=timeout)
                     d = json.loads(url_fd.read().decode("utf-8"))
                     v = d["pkgver"]
-                    logging.debug("Archlinux version is : %s" % v)
+                    logging.debug("Archweb version is : %s" % v)
                     return v
                 except Exception as exp:
-                    logging.debug("Archlinux check failed: %s" % exp)
-        raise VersionNotFound("No Archlinux package found")
+                    logging.debug("Archweb check failed: %s" % exp)
+        raise VersionNotFound("No Archweb package found")
 
     @staticmethod
     def get_version_aur(name, value):
