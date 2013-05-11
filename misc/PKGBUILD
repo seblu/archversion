@@ -27,7 +27,6 @@ build() {
 package() {
   cd $pkgname-$pkgver
   make install DESTDIR="$pkgdir"
-  install -Dm644 README.rst "$pkgdir/usr/share/$pkgname/doc/README.rst"
 }
 
 # vim:set ts=2 sw=2 et:
