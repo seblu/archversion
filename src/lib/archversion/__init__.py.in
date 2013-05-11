@@ -30,5 +30,8 @@ DEFAULT_CONFIG_FILENAME = "archversion.conf"
 # Cache is stored package versions
 DEFAULT_CACHE_FILENAME = "archversion.cache"
 
+# Annouced version (from autoconf)
+VERSION = "@VERSION@"
+
 # user agent using with http request
-USER_AGENT = "archversion v@VERSION@"
+USER_AGENT = "archversion v%s" % VERSION
