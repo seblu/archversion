@@ -7,7 +7,7 @@ pkgdesc='Archlinux Version Controller'
 arch=('any')
 url='https://github.com/seblu/archversion'
 license=('GPL2')
-depends=('python' 'python-xdg' 'bash')
+depends=('python' 'pyalpm' 'python-xdg')
 
 prepare() {
   cd "$startdir/.."

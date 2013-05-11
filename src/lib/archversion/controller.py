@@ -27,6 +27,7 @@ import json
 import logging
 import re
 import sys
+import pycman
 
 class VersionController(object):
     '''
@@ -42,6 +43,7 @@ class VersionController(object):
         # populate compare table
         # need to be done manually to avoid get_upstream to be in
         self.compare_table = {
+            "pacman": self.get_version_pacman,
             "archweb": self.get_version_archweb,
             "aur": self.get_version_aur,
             "cache": self.get_version_cache,
@@ -85,6 +87,30 @@ class VersionController(object):
         except Exception as exp:
             raise VersionNotFound("Upstream check failed: %s" % exp)
         assert(False)
+
+    @staticmethod
+    def get_version_pacman(name, value):
+        '''Return pacman version'''
+        logging.debug("Get pacman version")
+        # Load pacman
+        pacman = pycman.config.PacmanConfig("/etc/pacman.conf").initialize_alpm()
+        # Map db and name
+        repos = dict((db.name, db) for db in pacman.get_syncdbs())
+        # filter if repo is provided
+        if "repo" in value:
+            allowed_repos = value.get("repo").split(",")
+            for r in list(repos.keys()):
+                if r not in allowed_repos:
+                    repos.pop(r)
+        # looking into db for package name
+        for repo, db in repos.items():
+            logging.debug("Repo %s" % repo)
+            pkg = db.get_pkg(name)
+            if pkg is not None:
+                v = pkg.version.rsplit("-")[0]
+                logging.debug("pacman version is : %s" % v)
+                return v
+        raise VersionNotFound("No pacman package found")
 
     @staticmethod
     def get_version_archweb(name, value):
