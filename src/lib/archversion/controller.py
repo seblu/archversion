@@ -23,7 +23,6 @@
 from archversion import USER_AGENT
 from archversion.error import ConfigFileError, InvalidConfigFile, VersionNotFound
 from urllib.request import urlopen, Request
-import distutils.version
 import json
 import logging
 import re
@@ -81,7 +80,7 @@ class VersionController(object):
             v = list(set(v))
             # list all found versions
             logging.debug("Found versions: %s" % v)
-            v =  sorted(v, key=distutils.version.LooseVersion, reverse=True)[0]
+            v = max(v, key=VersionKey)
             # list selected version
             logging.debug("Upstream version is : %s" % v)
             return v
@@ -241,5 +240,58 @@ class VersionController(object):
             toprint += " %s%s: %s" % (c_compare, origin, v2)
         toprint += c_reset
         print(toprint)
+
+
+class VersionKey(object):
+    '''Sorting key of a version string'''
+
+    def __init__(self, vstring):
+        self.vstring = vstring
+        self.vlist = re.findall("([0-9]+|[a-zA-Z]+)", vstring)
+
+    def __repr__(self):
+        return "%s ('%s')" % (self.__class__.__name__, self.vstring)
+
+    def __str__(self):
+        return self.vstring
+
+    def __eq__(self, other):
+        return self.vstring == other.vstring
+
+    def __ne__(self, other):
+        return self.vstring != other.vstring
+
+    def __lt__(self, other):
+        try:
+            for i, a in enumerate(self.vlist):
+                b = other.vlist[i]
+                if a.isdigit() and b.isdigit():
+                    a = int(a)
+                    b = int(b)
+                    if a < b:
+                        return True
+                    elif a > b:
+                        return False
+                elif a.isdigit():
+                    return False
+                elif b.isdigit():
+                    return True
+                else:
+                    if a < b:
+                        return True
+                    elif a > b:
+                        return False
+        except IndexError:
+            return False
+        return True
+
+    def __gt__(self, other):
+        return not self.__lt__(other) and not self.__eq__(other)
+
+    def __le__(self, other):
+        return not self.__gt__(other)
+
+    def __ge__(self, other):
+        return not self.__lt__(other)
 
 # vim:set ts=4 sw=4 et ai:
