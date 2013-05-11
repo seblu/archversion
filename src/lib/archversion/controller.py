@@ -33,8 +33,6 @@ class VersionController(object):
     Handle version detection of packages
     '''
 
-    AUR_RPC = "http://aur.archlinux.org/rpc.php"
-
     def __init__(self, packages, cache):
         self.packages = packages
         # set cache
@@ -124,7 +122,7 @@ class VersionController(object):
         try:
             # retrieve config timeout
             timeout = float(value.get("timeout", None))
-            url = "%s?type=info&arg=%s" % (VersionController.AUR_RPC, name)
+            url = "http://aur.archlinux.org/rpc.php?type=info&arg=%s" % name
             url_req = Request(url, headers={"User-Agent": USER_AGENT})
             logging.debug("Requesting url: %s" % url)
             logging.debug("Timeout is %f" % timeout)
