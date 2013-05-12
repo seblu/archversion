@@ -1,6 +1,6 @@
 AC_INIT([archversion], [0])
 
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign dist-xz no-dist-gzip])
 AM_PATH_PYTHON([3.3])
 
 AC_CONFIG_FILES([
