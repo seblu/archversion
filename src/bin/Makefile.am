@@ -1,4 +1,4 @@
-bin_SCRIPTS = archversion
+dist_bin_SCRIPTS = archversion
 CLEANFILES = $(bin_SCRIPTS)
 
 install-exec-hook:
