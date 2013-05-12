@@ -25,9 +25,11 @@ from archversion.error import ConfigFileError, InvalidConfigFile, VersionNotFoun
 from urllib.request import urlopen, Request
 import json
 import logging
-import re
-import sys
+import os
 import pycman
+import re
+import subprocess
+import sys
 
 class VersionController(object):
     '''
@@ -46,6 +48,7 @@ class VersionController(object):
             "pacman": self.get_version_pacman,
             "archweb": self.get_version_archweb,
             "aur": self.get_version_aur,
+            "abs": self.get_version_abs,
             "cache": self.get_version_cache,
             "none": self.get_version_none
             }
@@ -160,6 +163,42 @@ class VersionController(object):
         except Exception as exp:
             raise VersionNotFound("AUR check failed: %s" % exp)
         assert(False)
+
+    @staticmethod
+    def get_version_abs(name, value):
+        '''Return abs version'''
+        logging.debug("Get ABS version")
+        # Get ABS tree path
+        abspath = value.get("abs_path", "/var/abs")
+        # Map db and name
+        repos = [d for d in os.listdir(abspath)
+                 if os.path.isdir(os.path.join(abspath, d))]
+        # filter if repo is provided
+        if "repo" in value:
+            allowed_repos = value.get("repo").split(",")
+            for r in list(repos):
+                if r not in allowed_repos:
+                    repos.remove(r)
+        # looking into db for package name
+        for repo in repos:
+            logging.debug("Looking into directory %s" % repo)
+            repopath = os.path.join(abspath, repo)
+            packages = [d for d in os.listdir(repopath)]
+            if name in packages:
+                pkgpath = os.path.join(repopath, name, "PKGBUILD")
+                if os.path.isfile(pkgpath):
+                    # use bash to export vars.
+                    # WARNING: CODE IS EXECUTED
+                    argv = ["bash", "-c", "set -a; source '%s'; exec printenv -0" % pkgpath]
+                    logging.debug("Bash sourcing of file %s" % pkgpath)
+                    proc = subprocess.Popen(argv, stdout=subprocess.PIPE, shell=False)
+                    envlist = proc.communicate("")[0].decode().split("\0")
+                    envdict = dict([x.split("=", 1) for x in envlist if "=" in x])
+                    if "pkgver" in envdict:
+                        v = envdict["pkgver"]
+                        logging.debug("ABS version is : %s" % v)
+                        return v
+        raise VersionNotFound("No ABS package found")
 
     def get_version_cache(self, name, value):
         '''Return cache version'''
