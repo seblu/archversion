@@ -1,22 +1,16 @@
 # Maintainer: Sébastien Luttringer
 
 pkgname=archversion
-pkgver=$(cd "$startdir/.."; ./bootstrap; ./configure -V|sed -n 's/archversion configure //p')
+pkgver=@VERSION@
 pkgrel=1
 pkgdesc='Archlinux Version Controller'
 arch=('any')
 url='https://github.com/seblu/archversion'
 license=('GPL2')
 depends=('python' 'pyalpm' 'python-xdg')
-
-prepare() {
-  cd "$startdir/.."
-  ./configure
-  make dist
-  mv -f $pkgname-$pkgver.tar.gz "$srcdir"
-  cd "$srcdir"
-  tar xf $pkgname-$pkgver.tar.gz
-}
+optdepends=('abs: to sync abs tree')
+source=("$pkgname-$pkgver.tar.xz")
+md5sums=('SKIP')
 
 build() {
   cd $pkgname-$pkgver
