@@ -77,7 +77,7 @@ class VersionController(object):
             url_fd = urlopen(url_req, timeout=timeout)
             logging.debug("Version regex: %s" % regex)
             v = re.findall(regex, url_fd.read().decode("utf-8"))
-            if v is None:
+            if v is None or len(v) == 0:
                 raise VersionNotFound("No regex match on upstream")
             # remove duplicity
             v = list(set(v))
