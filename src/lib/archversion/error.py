@@ -32,16 +32,28 @@ class VersionNotFound(BaseError):
     '''Version of a package is not found'''
     pass
 
-class ConfigFileError(BaseError):
-    '''All errors related to config file '''
-    pass
-
-class MissingConfigFile(ConfigFileError):
-    '''Config file is missing'''
-    pass
-
-class InvalidConfigFile(ConfigFileError):
+class NoSuchFile(BaseError):
     '''Config file is bad formatted'''
-    pass
+
+    def __init__(self, filename):
+        BaseError.__init__(self)
+        self.filename = filename
+
+    def __str__(self):
+        return "%s: No such file." % self.filename
+
+class MissingConfigFile(NoSuchFile):
+    '''Config file is missing'''
+
+    def __str__(self):
+        logging.debug("No such config file: %s" % self.filename)
+        return "Missing configuration file. Please create it before!"
+
+class InvalidConfigFile(BaseError):
+    '''Config file is bad formatted'''
+
+    def __str__(self):
+        return "Configuration file is bad formatted."
+
 
 # vim:set ts=4 sw=4 et ai:

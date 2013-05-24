@@ -126,13 +126,14 @@ def main():
         return args.func(args, vctrl)
     except KeyboardInterrupt:
         exit(ERR_ABORT)
-    except MissingConfigFile:
-        logging.error("Configuration file is missing. "
-                      "Please create it before!")
-        exit(ERR_FATAL)
     except BaseError as exp:
-        logging.error("Unknown error. Please report it.")
         logging.error(exp)
+        exit(ERR_FATAL)
+    except Exception as exp:
+        logging.error("Unknown error. Please report it with --debug.")
+        logging.error(exp)
+        if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+            raise
         exit(ERR_UNKNOWN)
 
 if __name__ == '__main__':

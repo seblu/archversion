@@ -21,7 +21,7 @@
 
 
 from archversion import USER_AGENT
-from archversion.error import ConfigFileError, InvalidConfigFile, VersionNotFound
+from archversion.error import InvalidConfigFile, VersionNotFound
 from urllib.request import urlopen, Request
 import json
 import logging
@@ -256,7 +256,7 @@ class VersionController(object):
                 yield (name, v_upstream, v_compare)
             except VersionNotFound as exp:
                 logging.warning("%s: Version not found: %s" % (name, exp))
-            except ConfigFileError as exp:
+            except InvalidConfigFile as exp:
                 logging.warning("%s: Invalid configuration: %s" % (name, exp))
 
     def print_names(self):

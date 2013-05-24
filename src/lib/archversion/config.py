@@ -37,8 +37,7 @@ class BaseConfigFile(OrderedDict):
         if path is None:
             self.path = load_first_config(default_filename)
         if not isinstance(self.path, str) or not os.path.exists(self.path):
-            logging.debug("No such config file: %s" % self.path)
-            raise MissingConfigFile()
+            raise MissingConfigFile(self.path)
         self.load()
 
     def load(self):
