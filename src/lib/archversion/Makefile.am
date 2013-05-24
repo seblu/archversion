@@ -1,6 +1,6 @@
 EXTRA_DIST = __init__.py.in
 
-archversion_PYTHON =  __init__.py config.py controller.py database.py error.py
+archversion_PYTHON =  __init__.py config.py version.py database.py error.py
 
 do_substitution = sed -e 's,[@]pythondir[@],$(pythondir),g' \
 	-e 's,[@]PACKAGE[@],$(PACKAGE),g' \

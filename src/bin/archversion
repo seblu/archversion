@@ -21,7 +21,7 @@
 '''Archlinux Version Controller'''
 
 from archversion.config import BaseConfigFile
-from archversion.controller import VersionController
+from archversion.version import VersionController
 from archversion.database import JsonDatabase
 from archversion.error import BaseError, MissingConfigFile
 from archversion.error import ERR_FATAL, ERR_ABORT, ERR_UNKNOWN
