@@ -12,6 +12,7 @@ INTRODUCTION
 - a local abs sync;
 - an ad-hoc local cache;
 - nothing.
+You can also use it to update a PKGBUILD to the upstream version.
 
 It targets Devs and TUs to help them to stay informed of new release of their packages.
 It can also be used by AUR maintainers to track update for their packages.
@@ -38,6 +39,8 @@ Basically, you can run:
 You can add the last one in a cron job to get a daily report of which packages
 need updates.
 
+To update a PKGBUILD to the last upstream version, run:
+$ archversion update
 
 HOW IT WORKS
 ============

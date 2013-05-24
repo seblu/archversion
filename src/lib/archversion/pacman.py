@@ -22,8 +22,8 @@
 
 import logging
 import os
+import re
 import subprocess
-
 
 def parse_pkgbuild(path, shell="bash"):
     '''
@@ -43,5 +43,23 @@ def parse_pkgbuild(path, shell="bash"):
     for env in os.environ:
         bashenv.pop(env, None)
     return bashenv
+
+def pkgbuild_set_version(path, version, reset=True):
+    '''
+    Change PKGBUILD pkgver to version
+    If reset is True, pkgrel will be set to 1
+    '''
+    data = open(path, "r").read()
+    data = re.sub("pkgver=.*", "pkgver=%s" % version, data)
+    if reset:
+        data = re.sub("pkgrel=.*", "pkgrel=1", data)
+    open(path, "w").write(data)
+
+def pkgbuild_update_checksums(path):
+    '''
+    Update checksums of PKGBUILD
+    Use pacman provided scripts updpkgsums
+    '''
+    subprocess.check_call(["updpkgsums"], shell=False, close_fds=True)
 
 # vim:set ts=4 sw=4 et ai:
