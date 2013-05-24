@@ -21,6 +21,7 @@
 
 
 from archversion import USER_AGENT
+from archversion.pacman import parse_pkgbuild
 from archversion.error import InvalidConfigFile, VersionNotFound
 from urllib.request import urlopen, Request
 import json
@@ -189,13 +190,9 @@ class VersionController(object):
                 if os.path.isfile(pkgpath):
                     # use bash to export vars.
                     # WARNING: CODE IS EXECUTED
-                    argv = ["bash", "-c", "set -a; source '%s'; exec printenv -0" % pkgpath]
-                    logging.debug("Bash sourcing of file %s" % pkgpath)
-                    proc = subprocess.Popen(argv, stdout=subprocess.PIPE, shell=False)
-                    envlist = proc.communicate("")[0].decode().split("\0")
-                    envdict = dict([x.split("=", 1) for x in envlist if "=" in x])
-                    if "pkgver" in envdict:
-                        v = envdict["pkgver"]
+                    pkgdict = parse_pkgbuild(pkgpath)
+                    if "pkgver" in pkgdict:
+                        v = pkgdict["pkgver"]
                         logging.debug("ABS version is : %s" % v)
                         return v
         raise VersionNotFound("No ABS package found")
