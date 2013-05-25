@@ -70,26 +70,30 @@ class VersionController(object):
                               "\.(?:tar(?:\.gz|\.bz2|\.xz)?|tgz|tbz2|zip)")))
         # retrieve config timeout
         timeout = float(value.get("timeout", None))
+        # do it retry time + 1
+        ntry = int(value.get("retry", 0)) + 1
         # do the job
-        try:
-            logging.debug("Requesting url: %s" % url)
-            logging.debug("Timeout is %f" % timeout)
-            url_req = Request(url, headers={"User-Agent": USER_AGENT})
-            url_fd = urlopen(url_req, timeout=timeout)
-            logging.debug("Version regex: %s" % regex)
-            v = re.findall(regex, url_fd.read().decode("utf-8"))
-            if v is None or len(v) == 0:
-                raise VersionNotFound("No regex match on upstream")
-            # remove duplicity
-            v = list(set(v))
-            # list all found versions
-            logging.debug("Found versions: %s" % v)
-            v = max(v, key=VersionKey)
-            # list selected version
-            logging.debug("Upstream version is : %s" % v)
-            return v
-        except Exception as exp:
-            raise VersionNotFound("Upstream check failed: %s" % exp)
+        for n in range(1, ntry + 1):
+            try:
+                logging.debug("Requesting url: %s (try %d/%d)" % (url, n, ntry))
+                logging.debug("Timeout is %f" % timeout)
+                url_req = Request(url, headers={"User-Agent": USER_AGENT})
+                url_fd = urlopen(url_req, timeout=timeout)
+                logging.debug("Version regex: %s" % regex)
+                v = re.findall(regex, url_fd.read().decode("utf-8"))
+                if v is None or len(v) == 0:
+                    raise VersionNotFound("No regex match on upstream")
+                # remove duplicity
+                v = list(set(v))
+                # list all found versions
+                logging.debug("Found versions: %s" % v)
+                v = max(v, key=VersionKey)
+                # list selected version
+                logging.debug("Upstream version is : %s" % v)
+                return v
+            except Exception as exp:
+                if n == ntry:
+                    raise VersionNotFound("Upstream check failed: %s" % exp)
         assert(False)
 
     @staticmethod
