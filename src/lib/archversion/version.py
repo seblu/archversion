@@ -21,13 +21,12 @@
 
 
 from archversion import USER_AGENT
-from archversion.pacman import parse_pkgbuild
+from archversion.pacman import parse_pkgbuild, Pacman
 from archversion.error import InvalidConfigFile, VersionNotFound
 from urllib.request import urlopen, Request
 import json
 import logging
 import os
-import pycman
 import re
 import subprocess
 import sys
@@ -101,23 +100,15 @@ class VersionController(object):
         '''Return pacman version'''
         logging.debug("Get pacman version")
         # Load pacman
-        pacman = pycman.config.PacmanConfig("/etc/pacman.conf").initialize_alpm()
-        # Map db and name
-        repos = dict((db.name, db) for db in pacman.get_syncdbs())
+        pacman = Pacman()
         # filter if repo is provided
-        if "repo" in value:
-            allowed_repos = value.get("repo").split(",")
-            for r in list(repos.keys()):
-                if r not in allowed_repos:
-                    repos.pop(r)
+        allowed_repos = value.get("repo").split(",") if "repo" in value else None
         # looking into db for package name
-        for repo, db in repos.items():
-            logging.debug("Repo %s" % repo)
-            pkg = db.get_pkg(name)
-            if pkg is not None:
-                v = pkg.version.rsplit("-")[0]
-                logging.debug("pacman version is : %s" % v)
-                return v
+        db, pkg = pacman.find_pkg(name, allowed_repos)
+        if pkg is not None:
+            v = pkg.version.rsplit("-")[0]
+            logging.debug("pacman version in %s: %s" % (db.name, v))
+            return v
         raise VersionNotFound("No pacman package found")
 
     @staticmethod

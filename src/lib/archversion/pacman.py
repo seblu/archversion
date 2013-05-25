@@ -1,7 +1,7 @@
 # coding: utf-8
 
 # archversion - Archlinux Version Controller
-# Copyright © 2012 Sébastien Luttringer
+# Copyright © 2013 Sébastien Luttringer
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,6 +22,7 @@
 
 import logging
 import os
+import pycman
 import re
 import subprocess
 
@@ -61,5 +62,35 @@ def pkgbuild_update_checksums(path):
     Use pacman provided scripts updpkgsums
     '''
     subprocess.check_call(["updpkgsums"], shell=False, close_fds=True)
+
+class Pacman(object):
+    '''
+    Cheap abstration of archlinux package manager
+    This object is a singleton to avoid pyalpm to use too much memory
+    '''
+
+    _instance = None
+
+    def __new__(cls, config="/etc/pacman.conf"):
+        # singleton design pattern
+        if cls._instance is None:
+            cls._instance = object.__new__(cls)
+            cls._handle = pycman.config.PacmanConfig(config).initialize_alpm()
+        return cls._instance
+
+    def find_pkg(self, name, repos=None):
+        '''
+        find a package named name in repos
+        '''
+        if repos is None:
+            dbs = self._handle.get_syncdbs()
+        else:
+            dbs = [ db for db in self._handle.get_syncdbs() if db.name in repos ]
+        # looking into db for package name
+        for db in dbs:
+            pkg = db.get_pkg(name)
+            if pkg is not None:
+                return (db, pkg)
+        return (None, None)
 
 # vim:set ts=4 sw=4 et ai:
