@@ -19,6 +19,8 @@
 
 '''Error Module'''
 
+import logging
+
 ERR_USAGE = 1
 ERR_FATAL = 2
 ERR_ABORT = 3
