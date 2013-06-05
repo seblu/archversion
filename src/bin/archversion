@@ -45,7 +45,8 @@ def parse_argv():
                         help="cache file path")
     sp_main = p_main.add_subparsers()
     # check parser
-    p_check = sp_main.add_parser("check", help="check packages versions")
+    p_check = sp_main.add_parser("check", aliases=["ck"],
+                                 help="check packages versions")
     p_check.add_argument("-c", "--diff-cache", action="store_true",
                          help="doesn't display cached versions")
     p_check.add_argument("-n", "--diff-new", action="store_true",
@@ -58,7 +59,8 @@ def parse_argv():
                          help="only check this packages")
     p_check.set_defaults(func=command_check)
     # list parser
-    p_list = sp_main.add_parser("list", help="list various informations")
+    p_list = sp_main.add_parser("list", aliases=["ls"],
+                                help="list various informations")
     p_list.add_argument("-s", "--sort", action="store_true",
                         help="sort listing")
     p_list.add_argument("what", choices=("config", "cache", "modes"),
@@ -67,7 +69,8 @@ def parse_argv():
                         "modes: list comparaison modes. ")
     p_list.set_defaults(func=command_list)
     # update parser
-    p_update = sp_main.add_parser("update", help="update a PKGBUILD with latest version")
+    p_update = sp_main.add_parser("update", aliases=["up"],
+                                  help="update a PKGBUILD with latest version")
     p_update.add_argument("-p", "--path", default="PKGBUILD",
                           help="name of the file to update. Default PKGBUILD")
     p_update.add_argument("-c", "--checksum", action="store_true",
