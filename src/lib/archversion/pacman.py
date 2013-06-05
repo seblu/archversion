@@ -34,7 +34,7 @@ def parse_pkgbuild(path, shell="bash"):
     WARNING: CODE IS EXECUTED
     '''
     # use shell sourcing to resolve custom bashism into PKGBUILD
-    argv = [shell, "-c", "set -a; source '%s'; exec printenv -0" % path]
+    argv = [shell, "-c", 'set -a; source "%s"; pkgname0="${pkgname[0]}"; exec printenv -0' % path]
     # Log it as warn because it's dangerous
     logging.warn("Running bash to source file %s" % path)
     proc = subprocess.Popen(argv, stdout=subprocess.PIPE, shell=False)

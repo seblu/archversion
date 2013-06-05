@@ -126,7 +126,7 @@ def command_update(args, vctrl):
     if os.getresuid()[1] == 0:
         logging.warn("Warning: You should not run this as root")
     pkgdict = parse_pkgbuild(args.path)
-    pkgname = pkgdict.get("pkgbase", pkgdict.get("pkgname", None))
+    pkgname = pkgdict.get("pkgname0", pkgdict.get("pkgbase", None))
     pkgver = pkgdict.get("pkgver", None)
     # some sanity checks
     if "pkgname" is None:
