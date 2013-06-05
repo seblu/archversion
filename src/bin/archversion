@@ -149,7 +149,7 @@ def command_update(args, vctrl):
     print("Upstream version: %s" % vctrl.cache[pkgname])
     # compare version
     if pkgver == upver:
-        print("Version are the same.")
+        print("Version are the same. Do nothing!")
         return
     # update version with upstream
     pkgbuild_set_version(args.path, upver)
