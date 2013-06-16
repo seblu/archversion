@@ -6,12 +6,14 @@ ArchVersion
 INTRODUCTION
 ============
 *archversion* is an upstream version of packages tracker against
+
 - the *Archlinux* web site [#]_;
 - the *Archlinux* User Repository [#]_;
 - a local pacman databases;
 - a local abs sync;
 - an ad-hoc local cache;
 - nothing.
+
 You can also use it to update a PKGBUILD to the upstream version.
 
 It targets Devs and TUs to help them to stay informed of new release of their packages.
@@ -94,6 +96,7 @@ This mode is a fake one, it only retrieves upstream version without any comparai
 
 DEPENDENCIES
 ============
+
 - Python 3.x [#]_
 - PyXDG [#]_
 - PyALPM [#]_
