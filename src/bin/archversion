@@ -43,6 +43,22 @@ def parse_argv():
     p_main.add_argument("-C", "--cache", default=None,
                         help="cache file path")
     sp_main = p_main.add_subparsers()
+    # config parser
+    p_conf = sp_main.add_parser("config", aliases=["co", "conf"],
+                                help="list configured packages")
+    p_conf.add_argument("-s", "--sort", action="store_true",
+                        help="sort listing")
+    p_conf.set_defaults(func=command_config)
+    # cache parser
+    p_cache = sp_main.add_parser("cache",  aliases=["ca"],
+                                 help="list cached verions")
+    p_cache.add_argument("-s", "--sort", action="store_true",
+                        help="sort listing")
+    p_cache.set_defaults(func=command_cache)
+    # modes parser
+    p_modes = sp_main.add_parser("modes", aliases=["mo"],
+                                 help="list check against modes")
+    p_modes.set_defaults(func=command_modes)
     # check parser
     p_check = sp_main.add_parser("check", aliases=["ck", "ch"],
                                  help="check packages versions")
@@ -57,16 +73,6 @@ def parse_argv():
     p_check.add_argument("packages", nargs='*',
                          help="only check this packages")
     p_check.set_defaults(func=command_check)
-    # list parser
-    p_list = sp_main.add_parser("list", aliases=["ls"],
-                                help="list various informations")
-    p_list.add_argument("-s", "--sort", action="store_true",
-                        help="sort listing")
-    p_list.add_argument("what", choices=("config", "cache", "modes"),
-                        help="config: list configured packages. "
-                        "cache: list packages in cache. "
-                        "modes: list comparaison modes. ")
-    p_list.set_defaults(func=command_list)
     # update parser
     p_update = sp_main.add_parser("update", aliases=["up"],
                                   help="update a PKGBUILD with the latest version")
@@ -84,6 +90,22 @@ def parse_argv():
         p_main.error("missing argument")
     return namespace
 
+def command_config(args, vctrl):
+    '''list configured packages'''
+    if args.sort:
+        vctrl.sort_packages()
+    vctrl.print_names()
+
+def command_cache(args, vctrl):
+    '''list cached versions'''
+    if args.sort:
+        vctrl.sort_cache()
+    vctrl.print_cache()
+
+def command_modes(args, vctrl):
+    '''list checking against modes'''
+    vctrl.print_modes()
+
 def command_check(args, vctrl):
     '''Handle check command call'''
     # reduce the package list
@@ -99,19 +121,6 @@ def command_check(args, vctrl):
         # save version database
         if args.save:
             vctrl.cache.save(args.cache, DEFAULT_CACHE_FILENAME)
-
-def command_list(args, vctrl):
-    '''Handle list command call'''
-    if args.what == "config":
-        if args.sort:
-            vctrl.sort_packages()
-        vctrl.print_names()
-    elif args.what == "cache":
-        if args.sort:
-            vctrl.sort_cache()
-        vctrl.print_cache()
-    elif args.what == "modes":
-        vctrl.print_modes()
 
 def command_update(args, vctrl):
     '''Handle update command call'''
