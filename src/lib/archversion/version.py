@@ -224,8 +224,12 @@ class VersionController(object):
         return None
 
     def check_versions(self, only_new=False, not_in_cache=False):
-        '''Check versions against according to compare mode'''
+        '''
+        Check versions against according to compare mode
+        Return a generator!
+        '''
         for name, value in self.packages.items():
+            logging.debug("Checking versions of package %s" % name)
             try:
                 # get compare mode
                 compare = value.get("compare", None)

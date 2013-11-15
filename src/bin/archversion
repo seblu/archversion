@@ -69,13 +69,13 @@ def parse_argv():
     p_list.set_defaults(func=command_list)
     # update parser
     p_update = sp_main.add_parser("update", aliases=["up"],
-                                  help="update a PKGBUILD with latest version")
+                                  help="update a PKGBUILD with the latest version")
     p_update.add_argument("-p", "--path", default="PKGBUILD",
                           help="name of the file to update. Default PKGBUILD")
     p_update.add_argument("-c", "--checksum", action="store_true",
                           help="run updpkgsums after update")
-    p_update.add_argument("-C", "--cache", action="store_true",
-                          help="use cache")
+    p_update.add_argument("-S", "--no-save", dest="save", action="store_false",
+                           help="don't save version updates in cache")
     p_update.set_defaults(func=command_update)
     # do parse
     namespace = p_main.parse_args()
@@ -127,13 +127,17 @@ def command_update(args, vctrl):
         raise BaseError("Unable to detect pkgname in %s" % args.path)
     if pkgver is None:
         raise BaseError("Unable to detect pkgver in %s" % args.path)
+    if pkgname not in vctrl.packages:
+        raise BaseError("No registered package %s" % pkgname)
+    # redure packge list to the extracted one
+    vctrl.reduce_packages((pkgname,))
     # get upstream version
-    vctrl.packages = [ pkgname ]
-    if not args.cache:
-        vctrl.check_versions()
-    upver = vctrl.cache.get(pkgname, None)
+    upver = list(vctrl.check_versions())[0][1]
     if upver is None:
         raise BaseError("Unable to detect upstream version of %s" % pkgname)
+    # save cache
+    if args.save:
+        vctrl.cache.save(args.cache, DEFAULT_CACHE_FILENAME)
     # print what we detect
     print("Package name: %s" % pkgname)
     print("PKGBUILD version: %s" % pkgver)
