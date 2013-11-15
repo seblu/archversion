@@ -53,6 +53,8 @@ def parse_argv():
     # cache parser
     p_cache = sp_main.add_parser("cache",  aliases=["ca"],
                                  help="list cached verions")
+    p_cache.add_argument("-r", "--raw", action="store_true",
+                        help="display raw cache")
     p_cache.add_argument("-s", "--sort", action="store_true",
                         help="sort listing")
     p_cache.add_argument("packages", nargs='*', help="only check these packages")
@@ -102,6 +104,9 @@ def command_config(args, vctrl):
 
 def command_cache(args, vctrl):
     '''list cached versions'''
+    if args.raw:
+        vctrl.print_cache()
+        return
     if len(args.packages) > 0:
         vctrl.reduce_packages(args.packages)
     if args.sort:
