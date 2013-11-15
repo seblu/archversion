@@ -23,6 +23,7 @@
 from archversion import USER_AGENT
 from archversion.pacman import parse_pkgbuild, Pacman
 from archversion.error import InvalidConfigFile, VersionNotFound
+from collections import OrderedDict
 from urllib.request import urlopen, Request
 import json
 import logging
@@ -52,6 +53,25 @@ class VersionController(object):
             "cache": self.get_version_cache,
             "none": self.get_version_none
             }
+
+    def reduce_packages(self, packages):
+        '''Keep only the give packages list'''
+        for pkg in list(self.packages):
+            if pkg not in packages:
+                self.packages.pop(pkg, None)
+
+    def sort_packages(self):
+        '''Sort package list by name'''
+        self.packages = self.sort_dict(self.packages)
+
+    def sort_cache(self):
+        '''Sort package list by name'''
+        self.cache = self.sort_dict(self.cache)
+
+    @staticmethod
+    def sort_dict(larousse):
+        '''Sort a dictionary into and OrderedDict'''
+        return OrderedDict(sorted(larousse.items(), key=lambda t: t[0]))
 
     @staticmethod
     def get_version_upstream(name, value):

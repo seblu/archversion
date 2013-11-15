@@ -27,7 +27,6 @@ from archversion.error import BaseError, MissingConfigFile, NoSuchFile
 from archversion.error import ERR_FATAL, ERR_ABORT, ERR_UNKNOWN
 from archversion.pacman import parse_pkgbuild, pkgbuild_set_version, pkgbuild_update_checksums
 from archversion.version import VersionController
-from collections import OrderedDict
 import argparse
 import logging
 import os
@@ -87,15 +86,12 @@ def parse_argv():
 
 def command_check(args, vctrl):
     '''Handle check command call'''
-    # filter packages
+    # reduce the package list
     if len(args.packages) > 0:
-        for pkg in list(vctrl.packages):
-            if pkg not in args.packages:
-                vctrl.packages.pop(pkg, None)
+        vctrl.reduce_packages(args.packages)
     # sort packages if asked
     if args.sort:
-        vctrl.packages = OrderedDict(sorted(vctrl.packages.items(),
-                                            key=lambda t: t[0]))
+        vctrl.sort_packages()
     # start checking
     try:
         vctrl.print_versions(args.diff_new, args.diff_cache)
@@ -106,18 +102,13 @@ def command_check(args, vctrl):
 
 def command_list(args, vctrl):
     '''Handle list command call'''
-    # sort if asked
-    if args.sort:
-        # sort packages
-        vctrl.packages = OrderedDict(sorted(vctrl.packages.items(),
-                                            key=lambda t: t[0]))
-        # sort cache
-        vctrl.cache = OrderedDict(sorted(vctrl.cache.items(),
-                                         key=lambda t: t[0]))
-    # call the right action
     if args.what == "config":
+        if args.sort:
+            vctrl.sort_packages()
         vctrl.print_names()
     elif args.what == "cache":
+        if args.sort:
+            vctrl.sort_cache()
         vctrl.print_cache()
     elif args.what == "modes":
         vctrl.print_modes()
