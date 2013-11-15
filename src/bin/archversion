@@ -48,12 +48,14 @@ def parse_argv():
                                 help="list configured packages")
     p_conf.add_argument("-s", "--sort", action="store_true",
                         help="sort listing")
+    p_conf.add_argument("packages", nargs='*', help="only check these packages")
     p_conf.set_defaults(func=command_config)
     # cache parser
     p_cache = sp_main.add_parser("cache",  aliases=["ca"],
                                  help="list cached verions")
     p_cache.add_argument("-s", "--sort", action="store_true",
                         help="sort listing")
+    p_cache.add_argument("packages", nargs='*', help="only check these packages")
     p_cache.set_defaults(func=command_cache)
     # modes parser
     p_modes = sp_main.add_parser("modes", aliases=["mo"],
@@ -71,7 +73,7 @@ def parse_argv():
     p_check.add_argument("-S", "--no-save", dest="save", action="store_false",
                          help="don't save version updates in cache")
     p_check.add_argument("packages", nargs='*',
-                         help="only check this packages")
+                         help="only check these packages")
     p_check.set_defaults(func=command_check)
     # update parser
     p_update = sp_main.add_parser("update", aliases=["up"],
@@ -92,15 +94,19 @@ def parse_argv():
 
 def command_config(args, vctrl):
     '''list configured packages'''
+    if len(args.packages) > 0:
+        vctrl.reduce_packages(args.packages)
     if args.sort:
         vctrl.sort_packages()
     vctrl.print_names()
 
 def command_cache(args, vctrl):
     '''list cached versions'''
+    if len(args.packages) > 0:
+        vctrl.reduce_packages(args.packages)
     if args.sort:
         vctrl.sort_cache()
-    vctrl.print_cache()
+    vctrl.print_names(True)
 
 def command_modes(args, vctrl):
     '''list checking against modes'''

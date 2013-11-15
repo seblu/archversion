@@ -275,10 +275,13 @@ class VersionController(object):
             except InvalidConfigFile as exp:
                 logging.warning("%s: Invalid configuration: %s" % (name, exp))
 
-    def print_names(self):
+    def print_names(self, cached=False):
         '''Print packages name'''
         for name in self.packages.keys():
-            print(name)
+            if cached:
+                print("%s : %s" % (name, self.cache.get(name, "Unknow")))
+            else:
+                print(name)
 
     def print_cache(self):
         '''Print cache name and version'''
