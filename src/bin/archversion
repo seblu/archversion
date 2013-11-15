@@ -44,7 +44,7 @@ def parse_argv():
                         help="cache file path")
     sp_main = p_main.add_subparsers()
     # check parser
-    p_check = sp_main.add_parser("check", aliases=["ck"],
+    p_check = sp_main.add_parser("check", aliases=["ck", "ch"],
                                  help="check packages versions")
     p_check.add_argument("-c", "--diff-cache", action="store_true",
                          help="doesn't display cached versions")
