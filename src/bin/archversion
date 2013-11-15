@@ -52,8 +52,8 @@ def parse_argv():
                          help="only display new versions")
     p_check.add_argument("-s", "--sort", action="store_true",
                          help="sort packages by name")
-    p_check.add_argument("-S", "--no-cache", action="store_true",
-                         help="don't save version in cache")
+    p_check.add_argument("-S", "--no-save", dest="save", action="store_false",
+                         help="don't save version updates in cache")
     p_check.add_argument("packages", nargs='*',
                          help="only check this packages")
     p_check.set_defaults(func=command_check)
@@ -97,7 +97,7 @@ def command_check(args, vctrl):
         vctrl.print_versions(args.diff_new, args.diff_cache)
     finally:
         # save version database
-        if not args.no_cache:
+        if args.save:
             vctrl.cache.save(args.cache, DEFAULT_CACHE_FILENAME)
 
 def command_list(args, vctrl):
