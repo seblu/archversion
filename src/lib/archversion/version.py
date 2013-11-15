@@ -25,6 +25,7 @@ from archversion.pacman import parse_pkgbuild, Pacman
 from archversion.error import InvalidConfigFile, VersionNotFound
 from collections import OrderedDict
 from urllib.request import urlopen, Request
+import fnmatch
 import json
 import logging
 import os
@@ -44,15 +45,13 @@ class VersionController(object):
             cache = {}
         self.cache = cache
         # populate compare table
-        # need to be done manually to avoid get_upstream to be in
-        self.compare_table = {
-            "pacman": self.get_version_pacman,
-            "archweb": self.get_version_archweb,
-            "aur": self.get_version_aur,
-            "abs": self.get_version_abs,
-            "cache": self.get_version_cache,
-            "none": self.get_version_none
-            }
+        self.compare_table = {}
+        for mode in fnmatch.filter(dir(self), "get_version_*"):
+            # we ignore get_version_upstream
+            # because we get mode to check against it
+            if mode == "get_version_upstream":
+                continue
+            self.compare_table[mode[12:]] = getattr(self, mode)
 
     def reduce_packages(self, packages):
         '''Keep only the give packages list'''
