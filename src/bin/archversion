@@ -123,9 +123,9 @@ def command_update(args, vctrl):
     pkgname = pkgdict.get("pkgname0", pkgdict.get("pkgbase", None))
     pkgver = pkgdict.get("pkgver", None)
     # some sanity checks
-    if "pkgname" is None:
+    if pkgname is None:
         raise BaseError("Unable to detect pkgname in %s" % args.path)
-    if "pkgver" is None:
+    if pkgver is None:
         raise BaseError("Unable to detect pkgver in %s" % args.path)
     # get upstream version
     vctrl.packages = [ pkgname ]
