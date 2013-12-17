@@ -125,9 +125,10 @@ class VersionController(object):
         # looking into db for package name
         db, pkg = pacman.find_pkg(name, allowed_repos)
         if pkg is not None:
-            v = pkg.version.rsplit("-")[0]
-            logging.debug("pacman version in %s: %s" % (db.name, v))
-            return v
+            epoch, pkgver, pkgrel = re.match("^(?:(\d+)\:)?([^-:]*)(?:-(\d+))?",
+                pkg.version).groups()
+            logging.debug("pacman version in %s: %s" % (db.name, pkgver))
+            return pkgver
         raise VersionNotFound("No pacman package found")
 
     @staticmethod
