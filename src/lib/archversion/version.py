@@ -102,9 +102,16 @@ class VersionController(object):
                 if v is None or len(v) == 0:
                     raise VersionNotFound("No regex match on upstream")
                 # remove duplicity
-                v = list(set(v))
+                v = set(v)
                 # list all found versions
                 logging.debug("Found versions: %s" % v)
+                # exclude versions
+                regex_exclude = value.get("regex_exclude", ".*(rc|beta).*")
+                if regex_exclude != "":
+                    logging.debug("Exclusion regex: %s" % regex_exclude)
+                    v -= set(filter(lambda x: "rc" in x, v))
+                    logging.debug("Found versions after exclusion: %s" % v)
+                # latest version is the highest
                 v = max(v, key=VersionKey)
                 # list selected version
                 logging.debug("Upstream version is : %s" % v)
