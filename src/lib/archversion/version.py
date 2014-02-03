@@ -109,7 +109,7 @@ class VersionController(object):
                 regex_exclude = value.get("regex_exclude", ".*(rc|beta|alpha).*")
                 if regex_exclude != "":
                     logging.debug("Exclusion regex: %s" % regex_exclude)
-                    v -= set(filter(lambda x: "rc" in x, v))
+                    v -= set(filter(lambda x: re.match(regex_exclude, x), v))
                     logging.debug("Found versions after exclusion: %s" % v)
                 # latest version is the highest
                 v = max(v, key=VersionKey)
