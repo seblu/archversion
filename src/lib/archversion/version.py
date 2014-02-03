@@ -106,7 +106,7 @@ class VersionController(object):
                 # list all found versions
                 logging.debug("Found versions: %s" % v)
                 # exclude versions
-                regex_exclude = value.get("regex_exclude", ".*(rc|beta).*")
+                regex_exclude = value.get("regex_exclude", ".*(rc|beta|alpha).*")
                 if regex_exclude != "":
                     logging.debug("Exclusion regex: %s" % regex_exclude)
                     v -= set(filter(lambda x: "rc" in x, v))
