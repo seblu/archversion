@@ -2,6 +2,8 @@ EXTRA_DIST = __init__.py.in
 
 archversion_PYTHON =  __init__.py config.py version.py database.py error.py pacman.py
 
+all-local: __init__.py
+
 do_substitution = sed -e 's,[@]pythondir[@],$(pythondir),g' \
 	-e 's,[@]PACKAGE[@],$(PACKAGE),g' \
 	-e 's,[@]VERSION[@],$(VERSION),g'
