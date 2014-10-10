@@ -28,11 +28,15 @@ import os
 class JsonDatabase(dict):
     '''Json database'''
 
-    @staticmethod
-    def _get_path(path, default_filename, create=False):
+    _path = None
+
+    def _get_path(self, path, default_filename, create=False):
         '''Get a path and ensure its exists if create is True'''
         if path is None:
-            path = os.path.join(xdg_cache_home, "archversion", default_filename)
+            if self._path is not None:
+                path = self._path
+            else:
+                path = os.path.join(xdg_cache_home, "archversion", default_filename)
         if create and not os.path.exists(path):
             directory = os.path.split(path)[0]
             if directory != "" and not os.path.isdir(directory):
@@ -50,29 +54,25 @@ class JsonDatabase(dict):
         '''Load registered version database into this database'''
         assert(default_filename is not None)
         # find the right path
-        path = self._get_path(path, default_filename)
-        if path is not None and os.path.isfile(path):
-            logging.debug("Loading database %s" % path)
+        self._path = self._get_path(path, default_filename)
+        if self._path is not None and os.path.isfile(self._path):
+            logging.debug("Loading database %s" % self._path)
             try:
-                fileobj = open(path, "r")
+                fileobj = open(self._path, "r")
                 dico = json.load(fileobj)
                 self.update(dico)
             except Exception as exp:
-                logging.error("Unable to load database %s: %s" % (path, exp))
+                logging.error("Unable to load database %s: %s" % (self._path, exp))
 
-
-    def save(self, path, default_filename, save_empty=False):
+    def save(self, save_empty=False):
         '''Save current version database into a file'''
-        assert(default_filename is not None)
         if not save_empty and len(self) == 0:
             logging.debug("Not saved. Database is empty")
             return
-        # find the right path
-        path = self._get_path(path, default_filename, create=True)
-        if path is not None:
-            logging.debug("Saving database %s" % path)
+        if self._path is not None:
+            logging.debug("Saving database %s" % self._path)
             try:
-                fileobj = open(path, "w")
+                fileobj = open(self._path, "w")
                 json.dump(self, fileobj)
             except Exception as exp:
-                logging.error("Unable to save database %s: %s" % (path, exp))
+                logging.error("Unable to save database %s: %s" % (self._path, exp))
