@@ -4,4 +4,4 @@ Description=Archcversion sync and send mail
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/archversion sync
-ExecStart=/usr/bin/archversion sendmail -f
+ExecStart=/usr/bin/archversion sendmail -fn

@@ -244,7 +244,11 @@ class VersionController(object):
                 logging.debug("eval_upstream produce version: %s" % v_upstream)
             # save upstream version
             if v_upstream is not None:
-                self.cache["upstream"][name] = {"version": v_upstream, "epoch": int(time())}
+                if self.cache["upstream"][name].get("version", None) != v_upstream:
+                    logging.debug("caching upstream version %s" % v_upstream)
+                    self.cache["upstream"][name] = {"version": v_upstream, "epoch": int(time())}
+                else:
+                    logging.debug("already cached upstream version %s" % v_upstream)
             else:
                 logging.warning("%s: Upstream version not found." % name)
             # get downstream mode
@@ -261,7 +265,11 @@ class VersionController(object):
                 logging.debug("eval_downstream produce version: %s" % v_downstream)
             # save downstream version
             if v_downstream is not None:
-                self.cache["downstream"][name] = {"version": v_downstream, "epoch": int(time())}
+                if self.cache["downstream"][name].get("version", None) != v_downstream:
+                    logging.debug("caching downstream version %s" % v_downstream)
+                    self.cache["downstream"][name] = {"version": v_downstream, "epoch": int(time())}
+                else:
+                    logging.debug("already cached downstream version %s" % v_downstream)
             else:
                 logging.warning("%s: Downstream version not found." % name)
 
@@ -288,15 +296,14 @@ class VersionController(object):
                 continue
             # only fresh version mode
             if only_fresh:
-                last_cmp = self.cache["compare"].get(name, None)
-                if (last_cmp is not None and
-                    last_cmp.get("upstream", None) == v_upstream and
-                    last_cmp.get("downstream", None) == v_downstream):
-                        logging.debug("%s: skipped by only fresh mode" % name)
-                        continue
-            # save our report in cache
-            self.cache["compare"][name] = {"upstream": v_upstream,
-                "downstream": v_downstream, "epoch": int(time())}
+                last_cmp = self.cache["compare"].get(name, -1)
+                last_up = self.cache["upstream"].get(name, {}).get("epoch", 0)
+                last_down = self.cache["downstream"].get(name, {}).get("epoch", 0)
+                if (last_cmp >= last_up and last_cmp >= last_down):
+                    logging.debug("%s: skipped by only fresh mode" % name)
+                    continue
+            # save our compare in cache
+            self.cache["compare"][name] = int(time())
             yield (name, v_upstream, v_downstream)
 
     def print_names(self):
