@@ -82,8 +82,8 @@ def parse_argv():
                           help="name of the file to update. Default PKGBUILD")
     p_update.add_argument("-c", "--checksum", action="store_true",
                           help="run updpkgsums after update")
-    p_update.add_argument("-S", "--no-save", dest="save", action="store_false",
-                           help="don't save version updates in cache")
+    p_update.add_argument("-S", "--no-sync", action="store_false",
+                           help="don't sync packages versions prior update")
     p_update.set_defaults(func=command_update)
     # do parse
     namespace = p_main.parse_args()
@@ -147,17 +147,17 @@ def command_update(args, vctrl):
         raise BaseError("No registered package %s" % pkgname)
     # redure packge list to the extracted one
     vctrl.reduce_packages((pkgname,))
+    # sync if not refused
+    if not args.no_sync:
+        vctrl.sync_packages()
     # get upstream version
-    upver = list(vctrl.check_versions())[0][1]
+    upver = vctrl.cache["upstream"].get(pkgname, {}).get("version", None)
     if upver is None:
         raise BaseError("Unable to detect upstream version of %s" % pkgname)
-    # save cache
-    if args.save:
-        vctrl.cache.save(args.cache, DEFAULT_CACHE_FILENAME)
     # print what we detect
     print("Package name: %s" % pkgname)
     print("PKGBUILD version: %s" % pkgver)
-    print("Upstream version: %s" % vctrl.cache[pkgname])
+    print("Upstream version: %s" % upver)
     # compare version
     if pkgver == upver:
         print("Version are the same. Do nothing!")
