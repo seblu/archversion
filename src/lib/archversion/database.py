@@ -30,6 +30,10 @@ class JsonDatabase(dict):
 
     _path = None
 
+    def __del__(self):
+        if self._path is not None:
+            self.save()
+
     def _get_path(self, path, default_filename, create=False):
         '''Get a path and ensure its exists if create is True'''
         if path is None:

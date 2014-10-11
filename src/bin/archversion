@@ -64,16 +64,14 @@ def parse_argv():
     # report parser
     p_report = sp_main.add_parser("report",
                                  help="report packages versions")
-    p_report.add_argument("-o", "--offline", action="store_true",
-                         help="use cached version as upstream. no network required")
-    p_report.add_argument("-c", "--diff-cache", action="store_true",
-                         help="doesn't display cached versions")
-    p_report.add_argument("-n", "--diff-new", action="store_true",
-                         help="only display new versions")
+    p_report.add_argument("-f", "--fresh", action="store_true",
+                         help="Only report fresh versions")
+    p_report.add_argument("-n", "--new", action="store_true",
+                         help="Only report new versions")
     p_report.add_argument("-s", "--sort", action="store_true",
                          help="sort packages by name")
-    p_report.add_argument("-S", "--no-save", dest="save", action="store_false",
-                         help="don't save version updates in cache")
+    p_report.add_argument("-S", "--sync", dest="sync", action="store_true",
+                         help="sync packages versions before report")
     p_report.add_argument("packages", nargs='*',
                          help="only report these packages")
     p_report.set_defaults(func=command_report)
@@ -125,13 +123,11 @@ def command_report(args, vctrl):
     # sort packages if asked
     if args.sort:
         vctrl.sort_packages()
-    # start checking
-    try:
-        vctrl.print_versions(args.diff_new, args.diff_cache)
-    finally:
-        # save version database
-        if args.save:
-            vctrl.cache.save(args.cache, DEFAULT_CACHE_FILENAME)
+    # sync if asked
+    if args.sync:
+        vctrl.sync_packages()
+    # start report
+    vctrl.print_versions(args.new, args.fresh)
 
 def command_update(args, vctrl):
     '''Handle update command call'''
