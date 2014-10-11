@@ -328,11 +328,6 @@ class VersionController(object):
             else:
                 print(name)
 
-    def print_cache(self):
-        '''Print cache name and version'''
-        for name, version in self.cache.items():
-            print(name, ":", version)
-
     def print_modes(self):
         '''Print comparaison modes'''
         for name in sorted(self.compare_table.keys()):

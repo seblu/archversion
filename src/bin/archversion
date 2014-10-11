@@ -57,15 +57,6 @@ def parse_argv():
                         help="sort syncing")
     p_sync.add_argument("packages", nargs='*', help="only sync these packages")
     p_sync.set_defaults(func=command_sync)
-    # cache parser
-    p_cache = sp_main.add_parser("cache",  aliases=["ca"],
-                                 help="list cached verions")
-    p_cache.add_argument("-r", "--raw", action="store_true",
-                        help="display raw cache")
-    p_cache.add_argument("-s", "--sort", action="store_true",
-                        help="sort listing")
-    p_cache.add_argument("packages", nargs='*', help="only check these packages")
-    p_cache.set_defaults(func=command_cache)
     # modes parser
     p_modes = sp_main.add_parser("modes", aliases=["mo"],
                                  help="list check against modes")
@@ -110,17 +101,6 @@ def command_config(args, vctrl):
     if args.sort:
         vctrl.sort_packages()
     vctrl.print_names()
-
-def command_cache(args, vctrl):
-    '''list cached versions'''
-    if args.raw:
-        vctrl.print_cache()
-        return
-    if len(args.packages) > 0:
-        vctrl.reduce_packages(args.packages)
-    if args.sort:
-        vctrl.sort_cache()
-    vctrl.print_names(True)
 
 def command_modes(args, vctrl):
     '''list checking against modes'''
