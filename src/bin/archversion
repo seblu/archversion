@@ -58,7 +58,7 @@ def parse_argv():
     p_sync.add_argument("packages", nargs='*', help="only sync these packages")
     p_sync.set_defaults(func=command_sync)
     # modes parser
-    p_modes = sp_main.add_parser("modes", aliases=["mo"],
+    p_modes = sp_main.add_parser("modes",
                                  help="list check against modes")
     p_modes.set_defaults(func=command_modes)
     # report parser

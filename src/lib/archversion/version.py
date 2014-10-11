@@ -328,10 +328,11 @@ class VersionController(object):
             else:
                 print(name)
 
-    def print_modes(self):
+    @staticmethod
+    def print_modes():
         '''Print comparaison modes'''
-        for name in sorted(self.compare_table.keys()):
-            print(name)
+        for mode in fnmatch.filter(dir(VersionController), "get_version_downstream_*"):
+            print(mode[23:])
 
     def print_versions(self, only_new=False, not_in_cache=False):
         '''Print versions'''
