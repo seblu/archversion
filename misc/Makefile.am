@@ -1,5 +1,5 @@
 noinst_SCRIPTS=PKGBUILD
-EXTRA_DIST = PKGBUILD.in $(noinst_SCRIPTS)
+EXTRA_DIST = PKGBUILD.in $(noinst_SCRIPTS) archversion.service archversion.timer
 CLEANFILES = $(noinst_SCRIPTS)
 
 do_substitution = sed -e 's,[@]pythondir[@],$(pythondir),g' \

@@ -1,0 +1,10 @@
+[Unit]
+Description=Archversion periodic check
+
+[Timer]
+OnCalendar=0/4:42
+AccuracySec=1m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
