@@ -5,14 +5,13 @@ ArchVersion
 
 INTRODUCTION
 ============
-*archversion* is an upstream version of packages tracker against
+*archversion* is a tool used to compare upstream and downstream versions of archlinux packages.
 
+Downstream packages version can be found in:
 - the *Archlinux* web site [#]_;
 - the *Archlinux* User Repository [#]_;
 - a local pacman databases;
-- a local abs sync;
-- an ad-hoc local cache;
-- nothing.
+- a local abs sync.
 
 You can also use it to update a PKGBUILD to the upstream version.
 
@@ -34,12 +33,14 @@ official repositories
 You can find more complete examples in the misc/ directory.
 
 Basically, you can run:
-*archversion check -d* to only display version which differ with cache.
-*archversion check -n* to only display new verions.
-*archversion check -nd* to display new versions not in cache.
+*archversion sync* to fetch last versions from upstream and downstream.
+*archversion report -n* to display new verions.
+*archversion report -S acpid* to sync and display version report of the acpid package.
+*archversion update* to update the current PKGBUILD to the last upstream version.
 
-You can add the last one in a cron job to get a daily report of which packages
-need updates.
+You can use systemd timers to get a report of packages which need updates:
+$ systemctl enable archversion.timer
+$ systemctl start archversion.timer
 
 To update a PKGBUILD to the last upstream version, run:
 $ archversion update
@@ -50,8 +51,8 @@ As simple as possible! *archversion* retrieve the content of the provided upstre
 webpage and search for well-known pattern. And then compare it to the reference.
 
 
-COMPARING MODES
-===============
+DOWNSTREAM MODES
+================
 
 pacman
 ------
@@ -82,12 +83,6 @@ a synced ABS filesystem tree.
 This is not responsible of syncing ABS tree. Please do it yourself.
 This is **DANGEROUS** because PKGBUILD are *partially* executed to guess the package version!
 So, prefer pacman mode!
-
-cache
------
-This mode compare a remote upstream version against a local cached value from a
-previous call. This mode could be called memory.
-It can be useful to check package upgrades without having a package in repository.
 
 none
 ----
