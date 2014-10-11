@@ -44,7 +44,7 @@ def parse_argv():
                         help="cache file path")
     sp_main = p_main.add_subparsers()
     # config parser
-    p_conf = sp_main.add_parser("config", aliases=["co", "conf"],
+    p_conf = sp_main.add_parser("config",
                                 help="list configured packages")
     p_conf.add_argument("-s", "--sort", action="store_true",
                         help="sort listing")
@@ -62,7 +62,7 @@ def parse_argv():
                                  help="list check against modes")
     p_modes.set_defaults(func=command_modes)
     # report parser
-    p_report = sp_main.add_parser("report", aliases=["ck", "ch"],
+    p_report = sp_main.add_parser("report",
                                  help="report packages versions")
     p_report.add_argument("-o", "--offline", action="store_true",
                          help="use cached version as upstream. no network required")
@@ -78,7 +78,7 @@ def parse_argv():
                          help="only report these packages")
     p_report.set_defaults(func=command_report)
     # update parser
-    p_update = sp_main.add_parser("update", aliases=["up"],
+    p_update = sp_main.add_parser("update",
                                   help="update a PKGBUILD with the latest version")
     p_update.add_argument("-p", "--path", default="PKGBUILD",
                           help="name of the file to update. Default PKGBUILD")
