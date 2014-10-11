@@ -25,6 +25,7 @@ from archversion.pacman import parse_pkgbuild, Pacman
 from archversion.error import InvalidConfigFile, VersionNotFound
 from collections import OrderedDict
 from urllib.request import urlopen, Request
+from time import time
 import fnmatch
 import json
 import logging
@@ -41,17 +42,13 @@ class VersionController(object):
     def __init__(self, packages, cache):
         self.packages = packages
         # set cache
-        if cache is None:
-            cache = {}
+        if set(cache.keys()) != set(("downstream", "report", "upstream")):
+            logging.debug("Invalid cache, purging it")
+            cache.clear()
+            cache["upstream"] = {}
+            cache["downstream"] = {}
+            cache["report"] = {}
         self.cache = cache
-        # populate compare table
-        self.compare_table = {}
-        for mode in fnmatch.filter(dir(self), "get_version_*"):
-            # we ignore get_version_upstream
-            # because we get mode to check against it
-            if mode == "get_version_upstream":
-                continue
-            self.compare_table[mode[12:]] = getattr(self, mode)
 
     def reduce_packages(self, packages):
         '''Keep only the give packages list'''
@@ -122,7 +119,15 @@ class VersionController(object):
         assert(False)
 
     @staticmethod
-    def get_version_pacman(name, value):
+    def get_version_downstream(name, value, mode):
+        '''Return dowstream version'''
+        try:
+            return getattr(VersionController, "get_version_downstream_%s" % mode)(name, value)
+        except AttributeError:
+            raise InvalidConfigFile("Invalid dowstream mode")
+
+    @staticmethod
+    def get_version_downstream_pacman(name, value):
         '''Return pacman version'''
         logging.debug("Get pacman version")
         # Load pacman
@@ -139,7 +144,7 @@ class VersionController(object):
         raise VersionNotFound("No pacman package found")
 
     @staticmethod
-    def get_version_archweb(name, value):
+    def get_version_downstream_archweb(name, value):
         '''Return archweb version'''
         logging.debug("Get archweb version")
         # if arch is specified
@@ -168,7 +173,7 @@ class VersionController(object):
         raise VersionNotFound("No Archweb package found")
 
     @staticmethod
-    def get_version_aur(name, value):
+    def get_version_downstream_aur(name, value):
         '''Return archlinux user repository version'''
         logging.debug("Get AUR version")
         try:
@@ -188,7 +193,7 @@ class VersionController(object):
         assert(False)
 
     @staticmethod
-    def get_version_abs(name, value):
+    def get_version_downstream_abs(name, value):
         '''Return abs version'''
         logging.debug("Get ABS version")
         # Get ABS tree path
@@ -219,16 +224,49 @@ class VersionController(object):
                         return v
         raise VersionNotFound("No ABS package found")
 
-    def get_version_cache(self, name, value):
-        '''Return cache version'''
-        v_cache = self.cache.get(name, None)
-        logging.debug("Cache version is : %s" % v_cache)
-        return v_cache
-
     @staticmethod
-    def get_version_none(name, value):
-        '''Return cache version'''
-        return None
+    def get_version_downstream_none(name, value):
+        '''Return none version'''
+        return ""
+
+    def sync_packages(self):
+        '''
+        Retrieve upstream and downstream versions and store them in cache
+        '''
+        try:
+            for name, value in self.packages.items():
+                logging.debug("Syncing versions of package %s" % name)
+                # get upstream version
+                v_upstream = self.get_version_upstream(name, value)
+                # apply eval to upstream
+                e_upstream = value.get("eval_upstream", None)
+                if e_upstream is not None:
+                    v_upstream = eval(e_upstream, {}, {"version": v_upstream})
+                    logging.debug("eval_upstream produce version: %s" % v_upstream)
+                # save upstream version
+                if v_upstream is not None:
+                    self.cache["upstream"][name] = {"version": v_upstream, "epoch": int(time())}
+                else:
+                    logging.warning("%s: Upstream version not found." % name)
+                # get downstream mode
+                mode = value.get("downstream", None)
+                if mode is None:
+                    logging.warning("%s: Invalid downstream mode: %s." % (name, mode))
+                    continue
+                # get downstream version
+                v_downstream = self.get_version_downstream(name, value, mode)
+                # apply eval to downstream
+                e_compare = value.get("eval_downstream", None)
+                if e_compare is not None:
+                    v_compare = eval(e_compare, {}, {"version": v_compare})
+                    logging.debug("eval_downstream produce version: %s" % v_downstream)
+                # save downstream version
+                if v_downstream is not None:
+                    self.cache["downstream"][name] = {"version": v_downstream, "epoch": int(time())}
+                else:
+                    logging.warning("%s: Downstream version not found." % name)
+        finally:
+            self.cache.save()
 
     def check_versions(self, only_new=False, not_in_cache=False):
         '''

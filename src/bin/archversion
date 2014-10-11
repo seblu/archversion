@@ -50,6 +50,13 @@ def parse_argv():
                         help="sort listing")
     p_conf.add_argument("packages", nargs='*', help="only check these packages")
     p_conf.set_defaults(func=command_config)
+    # sync parser
+    p_sync = sp_main.add_parser("sync",
+                                help="retrieve upstream and dowstream versions")
+    p_sync.add_argument("-s", "--sort", action="store_true",
+                        help="sort syncing")
+    p_sync.add_argument("packages", nargs='*', help="only sync these packages")
+    p_sync.set_defaults(func=command_sync)
     # cache parser
     p_cache = sp_main.add_parser("cache",  aliases=["ca"],
                                  help="list cached verions")
@@ -63,20 +70,22 @@ def parse_argv():
     p_modes = sp_main.add_parser("modes", aliases=["mo"],
                                  help="list check against modes")
     p_modes.set_defaults(func=command_modes)
-    # check parser
-    p_check = sp_main.add_parser("check", aliases=["ck", "ch"],
-                                 help="check packages versions")
-    p_check.add_argument("-c", "--diff-cache", action="store_true",
+    # report parser
+    p_report = sp_main.add_parser("report", aliases=["ck", "ch"],
+                                 help="report packages versions")
+    p_report.add_argument("-o", "--offline", action="store_true",
+                         help="use cached version as upstream. no network required")
+    p_report.add_argument("-c", "--diff-cache", action="store_true",
                          help="doesn't display cached versions")
-    p_check.add_argument("-n", "--diff-new", action="store_true",
+    p_report.add_argument("-n", "--diff-new", action="store_true",
                          help="only display new versions")
-    p_check.add_argument("-s", "--sort", action="store_true",
+    p_report.add_argument("-s", "--sort", action="store_true",
                          help="sort packages by name")
-    p_check.add_argument("-S", "--no-save", dest="save", action="store_false",
+    p_report.add_argument("-S", "--no-save", dest="save", action="store_false",
                          help="don't save version updates in cache")
-    p_check.add_argument("packages", nargs='*',
-                         help="only check these packages")
-    p_check.set_defaults(func=command_check)
+    p_report.add_argument("packages", nargs='*',
+                         help="only report these packages")
+    p_report.set_defaults(func=command_report)
     # update parser
     p_update = sp_main.add_parser("update", aliases=["up"],
                                   help="update a PKGBUILD with the latest version")
@@ -117,8 +126,19 @@ def command_modes(args, vctrl):
     '''list checking against modes'''
     vctrl.print_modes()
 
-def command_check(args, vctrl):
-    '''Handle check command call'''
+def command_sync(args, vctrl):
+    '''Handle sync command call'''
+    # reduce the package list
+    if len(args.packages) > 0:
+        vctrl.reduce_packages(args.packages)
+    # sort packages if asked
+    if args.sort:
+        vctrl.sort_packages()
+    # start syncing
+    vctrl.sync_packages()
+
+def command_report(args, vctrl):
+    '''Handle report command call'''
     # reduce the package list
     if len(args.packages) > 0:
         vctrl.reduce_packages(args.packages)
