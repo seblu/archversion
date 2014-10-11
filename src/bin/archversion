@@ -35,7 +35,7 @@ def parse_argv():
     '''Parse command line arguments'''
     p_main = argparse.ArgumentParser()
     p_main.add_argument("--version", action="version",
-                        version="%(prog)s version %s" + VERSION)
+                        version="%(prog)s version " + VERSION)
     p_main.add_argument("--debug", action="store_true",
                         help="debug mode")
     p_main.add_argument("-c", "--config", default=None,
