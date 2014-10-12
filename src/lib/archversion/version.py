@@ -20,12 +20,14 @@
 '''Version Module'''
 
 
-from archversion import USER_AGENT
-from archversion.pacman import parse_pkgbuild, Pacman
+from archversion import USER_AGENT, CONFIG_PACKAGES, CACHE_PACKAGES
+from archversion.config import BaseConfigFile
+from archversion.database import JsonDatabase
 from archversion.error import InvalidConfigFile, VersionNotFound
+from archversion.pacman import parse_pkgbuild, Pacman
 from collections import OrderedDict
-from urllib.request import urlopen, Request
 from time import time
+from urllib.request import urlopen, Request
 import fnmatch
 import json
 import logging
@@ -39,16 +41,19 @@ class VersionController(object):
     Handle version detection of packages
     '''
 
-    def __init__(self, packages, cache):
-        self.packages = packages
+    def __init__(self):
+        # load packages configuration
+        self.packages = BaseConfigFile(CONFIG_PACKAGES)
+        # load cache database
+        self.cache = JsonDatabase()
+        self.cache.load(CACHE_PACKAGES)
         # set cache
-        if set(cache.keys()) != set(("downstream", "compare", "upstream")):
+        if set(self.cache.keys()) != set(("downstream", "compare", "upstream")):
             logging.debug("Invalid cache, purging it")
-            cache.clear()
-            cache["upstream"] = {}
-            cache["downstream"] = {}
-            cache["compare"] = {}
-        self.cache = cache
+            self.cache.clear()
+            self.cache["upstream"] = {}
+            self.cache["downstream"] = {}
+            self.cache["compare"] = {}
 
     def reduce_packages(self, packages):
         '''Keep only the give packages list'''

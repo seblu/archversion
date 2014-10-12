@@ -1,0 +1,11 @@
+[sendmail]
+# Options in this section are about sendmail command
+
+# Mail address
+# to = archversion@gmail.com
+
+# Mail subject
+# subject = Archversion report
+
+# SMTP server
+# smtp = smtp.honeypot.org

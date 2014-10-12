@@ -1,15 +1,3 @@
-[ARCHVERSION]
-# Options in this section are option to archversion
-
-# Mail report address
-# mailto = archversion@gmail.com
-
-# Mail report subject
-# mailsubject = Archversion report
-
-# SMTP server
-# smtp = smtp.honeypot.org
-
 [DEFAULT]
 # Options in this section will be applied on all others
 # unless they are defined.

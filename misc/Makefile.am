@@ -10,4 +10,4 @@ do_substitution = sed -e 's,[@]pythondir[@],$(pythondir),g' \
 PKGBUILD: PKGBUILD.in
 	$(do_substitution) < $(srcdir)/$< > $@
 
-dist_doc_DATA = example*.conf
+dist_doc_DATA = *.conf.example

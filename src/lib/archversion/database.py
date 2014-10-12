@@ -19,11 +19,13 @@
 
 '''Database Module'''
 
+from archversion import XDG_DIRECTORY
 from archversion.error import BaseError
-from xdg.BaseDirectory import xdg_cache_home
+from os.path import join
+from xdg.BaseDirectory import save_cache_path
 import json
 import logging
-import os
+
 
 class JsonDatabase(dict):
     '''Json database'''
@@ -34,39 +36,24 @@ class JsonDatabase(dict):
         if self._path is not None:
             self.save()
 
-    def _get_path(self, path, default_filename, create=False):
-        '''Get a path and ensure its exists if create is True'''
-        if path is None:
-            if self._path is not None:
-                path = self._path
-            else:
-                path = os.path.join(xdg_cache_home, "archversion", default_filename)
-        if create and not os.path.exists(path):
-            directory = os.path.split(path)[0]
-            if directory != "" and not os.path.isdir(directory):
-                try:
-                    os.makedirs(directory)
-                except (IOError, OSError) as exp:
-                    raise BaseError("Create database path failed: %s" % exp)
-            try:
-                open(path, "a")
-            except (IOError, OSError) as exp:
-                raise BaseError("Create database filename failed; %s" % exp)
-        return path
-
-    def load(self, path, default_filename):
+    def load(self, filename):
         '''Load registered version database into this database'''
-        assert(default_filename is not None)
-        # find the right path
-        self._path = self._get_path(path, default_filename)
-        if self._path is not None and os.path.isfile(self._path):
-            logging.debug("Loading database %s" % self._path)
-            try:
-                fileobj = open(self._path, "r")
-                dico = json.load(fileobj)
-                self.update(dico)
-            except Exception as exp:
-                logging.error("Unable to load database %s: %s" % (self._path, exp))
+        assert(filename is not None)
+        path = join(save_cache_path(XDG_DIRECTORY), filename)
+        try:
+            open(path, "a")
+        except (IOError, OSError) as exp:
+            raise BaseError("Create database filename failed; %s" % exp)
+        logging.debug("Loading database %s" % path)
+        try:
+            fileobj = open(path, "r")
+            dico = json.load(fileobj)
+            self.update(dico)
+        except Exception as exp:
+            logging.error("Unable to load database %s: %s" % (path, exp))
+        # because we use self._path is __del__, this should be done when
+        # we are sure that db is loaded
+        self._path = path
 
     def save(self, save_empty=False):
         '''Save current version database into a file'''

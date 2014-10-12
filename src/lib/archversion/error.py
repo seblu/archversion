@@ -48,8 +48,7 @@ class MissingConfigFile(NoSuchFile):
     '''Config file is missing'''
 
     def __str__(self):
-        logging.debug("No such config file: %s" % self.filename)
-        return "Missing configuration file. Please create it before!"
+        return "Missing configuration file: %s.\nPlease create it before!" % self.filename
 
 class InvalidConfigFile(BaseError):
     '''Config file is bad formatted'''

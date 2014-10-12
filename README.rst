@@ -22,7 +22,7 @@ It can also be used by AUR maintainers to track update for their packages.
 HOW TO USE IT
 =============
 The first thing to do is to define a list of packages to track by creating a file
-~/.config/archversion.conf. The file content looks like an old fashioned INI file.
+~/.config/archversion/packages.conf. The file content looks like an old fashioned INI file.
 
 The following example allow to check the last version of acpid against archlinux
 official repositories
@@ -34,8 +34,8 @@ You can find more complete examples in the misc/ directory.
 
 Basically, you can run:
 *archversion sync* to fetch last versions from upstream and downstream.
-*archversion report -n* to display new verions.
-*archversion report -S acpid* to sync and display version report of the acpid package.
+*archversion report --new* to display new verions.
+*archversion report --sync acpid* to sync and display version report of the acpid package.
 *archversion update* to update the current PKGBUILD to the last upstream version.
 
 You can use systemd timers to get a report of packages which need updates:

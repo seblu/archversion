@@ -19,30 +19,30 @@
 
 '''Configuration Module'''
 
+from archversion import XDG_DIRECTORY
 from archversion.error import MissingConfigFile
 from collections import OrderedDict
 from configparser import RawConfigParser
-from xdg.BaseDirectory import load_first_config
-import logging
-import os
+from logging import debug
+from os.path import join, exists
+from xdg.BaseDirectory import save_config_path
 
 class BaseConfigFile(OrderedDict):
     '''Base config file class'''
 
-    def __init__(self, path, default_filename):
+    def __init__(self, filename):
         '''Initialize config object'''
-        assert(default_filename is not None)
+        assert(filename is not None)
         OrderedDict.__init__(self)
-        self.path = path
-        if path is None:
-            self.path = load_first_config(default_filename)
-        if not isinstance(self.path, str) or not os.path.exists(self.path):
+        path = save_config_path(XDG_DIRECTORY)
+        self.path = join(path, filename)
+        if not isinstance(self.path, str) or not exists(self.path):
             raise MissingConfigFile(self.path)
         self.load()
 
     def load(self):
         '''Load configuration'''
-        logging.debug("loading config file at: %s" % self.path)
+        debug("loading config file at: %s" % self.path)
         self._configparser = RawConfigParser()
         self._configparser.read(self.path)
         for name in self._configparser.sections():

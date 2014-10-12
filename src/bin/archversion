@@ -20,9 +20,8 @@
 
 '''Archlinux Version Controller'''
 
-from archversion import VERSION, DEFAULT_CONFIG_FILENAME, DEFAULT_CACHE_FILENAME
+from archversion import VERSION, CONFIG_SENDMAIL
 from archversion.config import BaseConfigFile
-from archversion.database import JsonDatabase
 from archversion.error import BaseError, MissingConfigFile, NoSuchFile
 from archversion.error import ERR_FATAL, ERR_ABORT, ERR_UNKNOWN
 from archversion.pacman import parse_pkgbuild, pkgbuild_set_version, pkgbuild_update_checksums
@@ -42,10 +41,6 @@ def parse_argv():
                         version="%(prog)s version " + VERSION)
     p_main.add_argument("--debug", action="store_true",
                         help="debug mode")
-    p_main.add_argument("-c", "--config", default=None,
-                        help="config file path")
-    p_main.add_argument("-C", "--cache", default=None,
-                        help="cache file path")
     sp_main = p_main.add_subparsers()
     # config parser
     p_conf = sp_main.add_parser("config",
@@ -151,13 +146,15 @@ def command_report(args, vctrl):
 
 def command_sendmail(args, vctrl):
     '''Handle sendmail command call'''
+    # load sendmail config
+    config = BaseConfigFile(CONFIG_SENDMAIL)
     # check args
     try:
-        to = vctrl.packages["ARCHVERSION"]["mailto"]
-        subject = vctrl.packages["ARCHVERSION"]["mailsubject"]
-        smtp = vctrl.packages["ARCHVERSION"]["smtp"]
-    except KeyError:
-        logging.error("Invalid sendmail config in section [ARCHVERSION]")
+        to = config["mail"]["to"]
+        subject = config["mail"]["subject"]
+        smtp = config["smtp"]["host"]
+    except KeyError as exp:
+        logging.error("Invalid sendmail config: %s" % exp)
         exit(1)
     # capture a report
     stdout = StringIO()
@@ -229,13 +226,8 @@ def main():
         # set global debug mode
         if args.debug:
             logging.getLogger().setLevel(logging.DEBUG)
-        # load configuration
-        packages = BaseConfigFile(args.config, DEFAULT_CONFIG_FILENAME)
-        # load cache database
-        cachedb = JsonDatabase()
-        cachedb.load(args.cache, DEFAULT_CACHE_FILENAME)
-        # load checking controller
-        vctrl = VersionController(packages, cachedb)
+        # load controller
+        vctrl = VersionController()
         # call command function
         return args.func(args, vctrl)
     except KeyboardInterrupt:

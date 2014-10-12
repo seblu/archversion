@@ -24,11 +24,17 @@ import logging
 # Init log systems
 logging.basicConfig(format="%(levelname)s: %(message)s")
 
+# xdg config directory
+XDG_DIRECTORY = "archversion"
+
 # Stored list of packagas we want to track
-DEFAULT_CONFIG_FILENAME = "archversion.conf"
+CONFIG_PACKAGES = "packages.conf"
+
+# Configuration for sendmail command
+CONFIG_SENDMAIL = "sendmail.conf"
 
 # Cache is stored package versions
-DEFAULT_CACHE_FILENAME = "archversion.cache"
+CACHE_PACKAGES = "packages.cache"
 
 # Annouced version (from autoconf)
 VERSION = "@VERSION@"
