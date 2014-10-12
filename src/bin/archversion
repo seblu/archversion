@@ -27,9 +27,13 @@ from archversion.error import BaseError, MissingConfigFile, NoSuchFile
 from archversion.error import ERR_FATAL, ERR_ABORT, ERR_UNKNOWN
 from archversion.pacman import parse_pkgbuild, pkgbuild_set_version, pkgbuild_update_checksums
 from archversion.version import VersionController
+from email.mime.text import MIMEText
+from io import StringIO
+from smtplib import SMTP
 import argparse
 import logging
 import os
+import sys
 
 def parse_argv():
     '''Parse command line arguments'''
@@ -70,11 +74,27 @@ def parse_argv():
                          help="Only report new versions")
     p_report.add_argument("-s", "--sort", action="store_true",
                          help="sort packages by name")
-    p_report.add_argument("-S", "--sync", dest="sync", action="store_true",
+    p_report.add_argument("-S", "--sync", action="store_true",
                          help="sync packages versions before report")
     p_report.add_argument("packages", nargs='*',
                          help="only report these packages")
     p_report.set_defaults(func=command_report)
+    # sendmail parser
+    p_sendmail = sp_main.add_parser("sendmail",
+                                 help="sendmail packages versions by mail")
+    p_sendmail.add_argument("-f", "--fresh", action="store_true",
+                         help="Only sendmail fresh versions")
+    p_sendmail.add_argument("-n", "--new", action="store_true",
+                         help="Only sendmail new versions")
+    p_sendmail.add_argument("-s", "--sort", action="store_true",
+                         help="sort packages by name")
+    p_sendmail.add_argument("-S", "--sync", action="store_true",
+                         help="sync packages versions before sendmail")
+    p_sendmail.add_argument("--to", help="mail destination address")
+    p_sendmail.add_argument("--smtp", help="smtp server")
+    p_sendmail.add_argument("packages", nargs='*',
+                         help="only sendmail these packages")
+    p_sendmail.set_defaults(func=command_sendmail)
     # update parser
     p_update = sp_main.add_parser("update",
                                   help="update a PKGBUILD with the latest version")
@@ -128,6 +148,39 @@ def command_report(args, vctrl):
         vctrl.sync_packages()
     # start report
     vctrl.print_versions(args.new, args.fresh)
+
+def command_sendmail(args, vctrl):
+    '''Handle sendmail command call'''
+    # check args
+    try:
+        to = vctrl.packages["ARCHVERSION"]["mailto"]
+        subject = vctrl.packages["ARCHVERSION"]["mailsubject"]
+        smtp = vctrl.packages["ARCHVERSION"]["smtp"]
+    except KeyError:
+        logging.error("Invalid sendmail config in section [ARCHVERSION]")
+        exit(1)
+    # capture a report
+    stdout = StringIO()
+    stdout_bak = sys.stdout
+    sys.stdout = stdout
+    command_report(args, vctrl)
+    sys.stdout = stdout_bak
+    # no data, no mail!
+    if len(stdout.getvalue()) == 0:
+        return
+    # format the mail
+    msg = MIMEText(stdout.getvalue())
+    msg['Subject'] = subject
+    msg['From'] = "Archversion <version@archlinux.org>"
+    msg['To'] = to
+    # send the mail
+    try:
+        s = SMTP(smtp)
+        s.send_message(msg)
+        s.quit()
+    except Exception as exp:
+        logging.error("Sendmail fail: %s" % exp)
+        exit(1)
 
 def command_update(args, vctrl):
     '''Handle update command call'''
