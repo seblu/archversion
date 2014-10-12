@@ -21,6 +21,8 @@ build() {
 package() {
   cd $pkgname-$pkgver
   make install DESTDIR="$pkgdir"
+  install -Dm644 misc/archversion.service "$pkgdir/usr/lib/systemd/user/archversion.service"
+  install -Dm644 misc/archversion.timer "$pkgdir/usr/lib/systemd/user/archversion.timer"
 }
 
 # vim:set ts=2 sw=2 et:
