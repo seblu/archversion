@@ -74,6 +74,18 @@ def parse_argv():
     p_report.add_argument("packages", nargs='*',
                          help="only report these packages")
     p_report.set_defaults(func=command_report)
+    # check parser
+    p_check = sp_main.add_parser("check",
+                                 help="check packages versions")
+    p_check.add_argument("-f", "--fresh", action="store_true",
+                         help="Only report fresh versions")
+    p_check.add_argument("-n", "--new", action="store_true",
+                         help="Only report new versions")
+    p_check.add_argument("-s", "--sort", action="store_true",
+                         help="sort packages by name")
+    p_check.add_argument("packages", nargs='*',
+                         help="only check these packages")
+    p_check.set_defaults(func=command_check)
     # sendmail parser
     p_sendmail = sp_main.add_parser("sendmail",
                                  help="sendmail packages versions by mail")
@@ -129,6 +141,12 @@ def command_sync(args, vctrl):
         vctrl.sort_packages()
     # start syncing
     vctrl.sync_packages()
+
+def command_check(args, vctrl):
+    '''Handle check command call'''
+    # reduce the package list
+    args.sync=True
+    command_report(args, vctrl)
 
 def command_report(args, vctrl):
     '''Handle report command call'''
