@@ -109,7 +109,7 @@ def parse_argv():
                           help="name of the file to update. Default PKGBUILD")
     p_update.add_argument("-c", "--checksum", action="store_true",
                           help="run updpkgsums after update")
-    p_update.add_argument("-S", "--no-sync", action="store_false",
+    p_update.add_argument("-S", "--no-sync", action="store_true",
                            help="don't sync packages versions prior update")
     p_update.set_defaults(func=command_update)
     # do parse
