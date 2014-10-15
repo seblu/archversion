@@ -249,7 +249,7 @@ class VersionController(object):
                 logging.debug("eval_upstream produce version: %s" % v_upstream)
             # save upstream version
             if v_upstream is not None:
-                if self.cache["upstream"][name].get("version", None) != v_upstream:
+                if self.cache["upstream"].get(name, {}).get("version", None) != v_upstream:
                     logging.debug("caching upstream version %s" % v_upstream)
                     self.cache["upstream"][name] = {"version": v_upstream, "epoch": int(time())}
                 else:
@@ -270,7 +270,7 @@ class VersionController(object):
                 logging.debug("eval_downstream produce version: %s" % v_downstream)
             # save downstream version
             if v_downstream is not None:
-                if self.cache["downstream"][name].get("version", None) != v_downstream:
+                if self.cache["downstream"].get(name, {}).get("version", None) != v_downstream:
                     logging.debug("caching downstream version %s" % v_downstream)
                     self.cache["downstream"][name] = {"version": v_downstream, "epoch": int(time())}
                 else:
