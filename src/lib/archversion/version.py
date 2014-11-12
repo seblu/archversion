@@ -190,6 +190,8 @@ class VersionController(object):
             logging.debug("Timeout is %f" % timeout)
             url_fd = urlopen(url_req, timeout=timeout)
             d = json.loads(url_fd.read().decode("utf-8"))
+            if "version" not in d or d["version"] != 1:
+                raise VersionNotFound("Unsupported AUR version")
             v = d["results"]["Version"].rsplit("-")[0]
             logging.debug("AUR version is : %s" % v)
             return v
