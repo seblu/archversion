@@ -243,44 +243,41 @@ class VersionController(object):
         Retrieve upstream and downstream versions and store them in cache
         '''
         for name, value in self.packages.items():
-            logging.debug("Syncing versions of package %s" % name)
-            # get upstream version
-            v_upstream = self.get_version_upstream(name, value)
-            # apply eval to upstream
-            e_upstream = value.get("eval_upstream", None)
-            if e_upstream is not None:
-                v_upstream = eval(e_upstream, {}, {"version": v_upstream})
-                logging.debug("eval_upstream produce version: %s" % v_upstream)
-            # save upstream version
-            if v_upstream is not None:
+            try:
+                logging.debug("Syncing versions of package %s" % name)
+                # get upstream version
+                v_upstream = self.get_version_upstream(name, value)
+                # apply eval to upstream
+                e_upstream = value.get("eval_upstream", None)
+                if e_upstream is not None:
+                    v_upstream = eval(e_upstream, {}, {"version": v_upstream})
+                    logging.debug("eval_upstream produce version: %s" % v_upstream)
+                # save upstream version
                 if self.cache["upstream"].get(name, {}).get("version", None) != v_upstream:
                     logging.debug("caching upstream version %s" % v_upstream)
                     self.cache["upstream"][name] = {"version": v_upstream, "epoch": int(time())}
                 else:
                     logging.debug("already cached upstream version %s" % v_upstream)
-            else:
-                logging.warning("%s: Upstream version not found." % name)
-            # get downstream mode
-            mode = value.get("downstream", None)
-            if mode is None:
-                logging.warning("%s: Invalid downstream mode: %s." % (name, mode))
-                continue
-            # get downstream version
-            v_downstream = self.get_version_downstream(name, value, mode)
-            # apply eval to downstream
-            e_compare = value.get("eval_downstream", None)
-            if e_compare is not None:
-                v_compare = eval(e_compare, {}, {"version": v_compare})
-                logging.debug("eval_downstream produce version: %s" % v_downstream)
-            # save downstream version
-            if v_downstream is not None:
+                # get downstream mode
+                mode = value.get("downstream", None)
+                if mode is None:
+                    logging.warning("%s: Invalid downstream mode: %s." % (name, mode))
+                    continue
+                # get downstream version
+                v_downstream = self.get_version_downstream(name, value, mode)
+                # apply eval to downstream
+                e_compare = value.get("eval_downstream", None)
+                if e_compare is not None:
+                    v_compare = eval(e_compare, {}, {"version": v_compare})
+                    logging.debug("eval_downstream produce version: %s" % v_downstream)
+                # save downstream version
                 if self.cache["downstream"].get(name, {}).get("version", None) != v_downstream:
                     logging.debug("caching downstream version %s" % v_downstream)
                     self.cache["downstream"][name] = {"version": v_downstream, "epoch": int(time())}
                 else:
                     logging.debug("already cached downstream version %s" % v_downstream)
-            else:
-                logging.warning("%s: Downstream version not found." % name)
+            except Exception as exp:
+                logging.error("Sync of %s: %s" % (name, exp))
 
     def compare_versions(self, only_new=False, only_fresh=False):
         '''
