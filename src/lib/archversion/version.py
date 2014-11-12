@@ -192,6 +192,8 @@ class VersionController(object):
             d = json.loads(url_fd.read().decode("utf-8"))
             if "version" not in d or d["version"] != 1:
                 raise VersionNotFound("Unsupported AUR version")
+            if len(d["results"]) == 0:
+                raise VersionNotFound("No such package")
             v = d["results"]["Version"].rsplit("-")[0]
             logging.debug("AUR version is : %s" % v)
             return v
