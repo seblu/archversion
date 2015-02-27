@@ -47,13 +47,20 @@ def parse_pkgbuild(path, shell="bash"):
 
 def pkgbuild_set_version(path, version, reset=True):
     '''
-    Change PKGBUILD pkgver to version
-    If reset is True, pkgrel will be set to 1
+    Change PKGBUILD $pkgver to version
+    if a variable $_pkgver is present, this one will be updated instead of $pkgver
+    If reset is True, $pkgrel will be set to 1
     '''
+    wspces = "[ \t\r\f\v]"
     data = open(path, "r").read()
-    data = re.sub("pkgver=.*", "pkgver=%s" % version, data)
+    # prefer to replace $_pkgver
+    var = "pkgver" if re.search("^%s*_pkgver=" % wspces, data,
+        re.MULTILINE) is None else "_pkgver"
+    data = re.sub("^(%s*%s=).*$" % (wspces, var),
+        "\g<1>%s" % version, data, flags=re.MULTILINE)
     if reset:
-        data = re.sub("pkgrel=.*", "pkgrel=1", data)
+        data = re.sub("^(%s*pkgrel=).*" % wspces, "\g<1>1", data,
+            flags=re.MULTILINE)
     open(path, "w").write(data)
 
 def pkgbuild_update_checksums(path):
