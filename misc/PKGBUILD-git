@@ -1,7 +1,7 @@
 # Maintainer: Sébastien Luttringer
 
 pkgname=archversion-git
-pkgver=$(date +%Y.%m.%d)
+pkgver=pkgver=$(git log --pretty=format:''|wc -l)
 pkgrel=1
 pkgdesc='Archlinux Version Controller (Git version)'
 arch=('any')
