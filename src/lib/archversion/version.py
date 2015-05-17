@@ -89,14 +89,14 @@ class VersionController(object):
                     value.get("regex_ext",
                               "\.(?:tar(?:\.gz|\.bz2|\.xz)?|tgz|tbz2|zip)")))
         # retrieve config timeout
-        timeout = float(value.get("timeout", None))
+        timeout = float(value["timeout"]) if "timeout" in value else None
         # do it retry time + 1
         ntry = int(value.get("retry", 0)) + 1
         # do the job
         for n in range(1, ntry + 1):
             try:
                 logging.debug("Requesting url: %s (try %d/%d)" % (url, n, ntry))
-                logging.debug("Timeout is %f" % timeout)
+                logging.debug("Timeout is %s" % timeout)
                 url_req = Request(url, headers={"User-Agent": USER_AGENT})
                 url_fd = urlopen(url_req, timeout=timeout)
                 logging.debug("Version regex: %s" % regex)
@@ -159,14 +159,14 @@ class VersionController(object):
                           "community-testing,community,testing,extra,core"
                           ).split(",")
         # retrieve config timeout
-        timeout = float(value.get("timeout", None))
+        timeout = float(value["timeout"]) if "timeout" in value else None
         for arch in archs:
             for repo in repos:
                 url = "http://www.archlinux.org/packages/%s/%s/%s/json" % (
                     repo, arch, name)
                 url_req = Request(url, headers={"User-Agent": USER_AGENT})
                 logging.debug("Requesting url: %s" % url)
-                logging.debug("Timeout is %f" % timeout)
+                logging.debug("Timeout is %s" % timeout)
                 try:
                     url_fd = urlopen(url_req, timeout=timeout)
                     d = json.loads(url_fd.read().decode("utf-8"))
@@ -183,11 +183,11 @@ class VersionController(object):
         logging.debug("Get AUR version")
         try:
             # retrieve config timeout
-            timeout = float(value.get("timeout", None))
+            timeout = float(value["timeout"]) if "timeout" in value else None
             url = "http://aur.archlinux.org/rpc.php?type=info&arg=%s" % name
             url_req = Request(url, headers={"User-Agent": USER_AGENT})
             logging.debug("Requesting url: %s" % url)
-            logging.debug("Timeout is %f" % timeout)
+            logging.debug("Timeout is %s" % timeout)
             url_fd = urlopen(url_req, timeout=timeout)
             d = json.loads(url_fd.read().decode("utf-8"))
             if "version" not in d or d["version"] != 1:
