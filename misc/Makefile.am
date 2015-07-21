@@ -1,4 +1,4 @@
-noinst_SCRIPTS=PKGBUILD
+noinst_SCRIPTS=PKGBUILD PKGBUILD-git
 EXTRA_DIST = PKGBUILD.in $(noinst_SCRIPTS) archversion.service archversion.timer
 CLEANFILES = $(noinst_SCRIPTS)
 
@@ -11,3 +11,6 @@ PKGBUILD: PKGBUILD.in
 	$(do_substitution) < $(srcdir)/$< > $@
 
 dist_doc_DATA = *.conf.example
+
+pkg:
+	makepkg -p PKGBUILD-git
