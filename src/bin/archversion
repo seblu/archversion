@@ -211,15 +211,20 @@ def command_update(args, vctrl):
     pkgdict = parse_pkgbuild(args.path)
     if args.vars:
         pprint(pkgdict)
-    pkgname = pkgdict.get("pkgname0", pkgdict.get("pkgbase", None))
+    pkgbase = pkgdict.get("pkgbase", None)
+    pkgname0 = pkgdict.get("pkgname0", None)
     pkgver = pkgdict.get("pkgver", None)
     # some sanity checks
-    if pkgname is None:
-        raise BaseError("Unable to detect pkgname in %s" % args.path)
+    if pkgname0 is None and pkgbase is None:
+        raise BaseError("Unable to detect pkgname/pkgbase in %s" % args.path)
     if pkgver is None:
         raise BaseError("Unable to detect pkgver in %s" % args.path)
-    if pkgname not in vctrl.packages:
-        raise BaseError("No registered package %s" % pkgname)
+    if pkgname0 in vctrl.packages:
+        pkgname = pkgname0
+    elif pkgbase in vctrl.packages:
+        pkgname = pkgbase
+    else:
+        raise BaseError("No registered package %s" % (pkgbase or pkgname0))
     # redure packge list to the extracted one
     vctrl.reduce_packages((pkgname,))
     # sync if not refused
