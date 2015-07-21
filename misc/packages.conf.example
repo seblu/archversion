@@ -21,6 +21,10 @@ url =
 # Url request timeout in seconds
 #timeout =
 
+# Alternative package name. Space separated list
+# Useful with split packages
+#alias =
+
 # Url retry count (default: 0)
 #retry =
 

@@ -310,7 +310,12 @@ class VersionController(object):
                     continue
             # save our compare in cache
             self.cache["compare"][name] = int(time())
+            # gen main pacakge
             yield (name, v_upstream, v_downstream)
+            # gen aliases package
+            for alias in value.get("alias", "").split(" "):
+                if alias != "":
+                    yield (alias, v_upstream, v_downstream)
 
     def print_names(self):
         '''Print packages name'''

@@ -288,6 +288,7 @@ regex_name = docutils
 [virtualbox]
 url = http://download.virtualbox.org/virtualbox/
 regex = (\d+\.\d+\.\d+)/
+alias = virtualbox-modules virtualbox-modules-lts virtualbox-ext-oracle virtualbox-guest-iso
 
 [scsiadd]
 url = http://llg.cubic.org/tools/
