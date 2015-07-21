@@ -29,6 +29,7 @@ from archversion.version import VersionController
 from email.mime.text import MIMEText
 from email.utils import formatdate
 from io import StringIO
+from pprint import pprint
 from smtplib import SMTP
 import argparse
 import logging
@@ -108,6 +109,8 @@ def parse_argv():
                                   help="update a PKGBUILD with the latest version")
     p_update.add_argument("-p", "--path", default="PKGBUILD",
                           help="name of the file to update. Default PKGBUILD")
+    p_update.add_argument("-v", "--vars", action="store_true",
+                          help="print variables extracted from the PKGBUILD")
     p_update.add_argument("-c", "--checksum", action="store_true",
                           help="run updpkgsums after update")
     p_update.add_argument("-S", "--no-sync", action="store_true",
@@ -206,6 +209,8 @@ def command_update(args, vctrl):
     if os.getresuid()[1] == 0:
         logging.warn("Warning: You should not run this as root")
     pkgdict = parse_pkgbuild(args.path)
+    if args.vars:
+        pprint(pkgdict)
     pkgname = pkgdict.get("pkgname0", pkgdict.get("pkgbase", None))
     pkgver = pkgdict.get("pkgver", None)
     # some sanity checks
