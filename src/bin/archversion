@@ -126,9 +126,9 @@ def parse_argv():
 def command_config(args, vctrl):
     '''list configured packages'''
     if len(args.packages) > 0:
-        vctrl.reduce_packages(args.packages)
+        vctrl.select(args.packages)
     if args.sort:
-        vctrl.sort_packages()
+        vctrl.sort()
     vctrl.print_names()
 
 def command_modes(args, vctrl):
@@ -139,12 +139,12 @@ def command_sync(args, vctrl):
     '''Handle sync command call'''
     # reduce the package list
     if len(args.packages) > 0:
-        vctrl.reduce_packages(args.packages)
+        vctrl.select(args.packages)
     # sort packages if asked
     if args.sort:
-        vctrl.sort_packages()
+        vctrl.sort()
     # start syncing
-    vctrl.sync_packages()
+    vctrl.sync()
 
 def command_check(args, vctrl):
     '''Handle check command call'''
@@ -156,13 +156,13 @@ def command_report(args, vctrl):
     '''Handle report command call'''
     # reduce the package list
     if len(args.packages) > 0:
-        vctrl.reduce_packages(args.packages)
+        vctrl.select(args.packages)
     # sort packages if asked
     if args.sort:
-        vctrl.sort_packages()
+        vctrl.sort()
     # sync if asked
     if args.sync:
-        vctrl.sync_packages()
+        vctrl.sync()
     # start report
     vctrl.print_versions(args.new, args.fresh)
 
@@ -226,12 +226,12 @@ def command_update(args, vctrl):
     else:
         raise BaseError("No registered package %s" % (pkgbase or pkgname0))
     # redure packge list to the extracted one
-    vctrl.reduce_packages((pkgname,))
+    vctrl.select((pkgname,))
     # sync if not refused
     if not args.no_sync:
-        vctrl.sync_packages()
+        vctrl.sync()
     # get upstream version
-    upver = vctrl.cache["upstream"].get(pkgname, {}).get("version", None)
+    upver = vctrl.versions[pkgname][0]
     if upver is None:
         raise BaseError("Unable to detect upstream version of %s" % pkgname)
     # print what we detect

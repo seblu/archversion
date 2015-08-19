@@ -43,31 +43,138 @@ class VersionController(object):
 
     def __init__(self):
         # load packages configuration
-        self.packages = BaseConfigFile(CONFIG_PACKAGES)
+        self._packages = BaseConfigFile(CONFIG_PACKAGES)
         # load cache database
-        self.cache = JsonDatabase()
-        self.cache.load(CACHE_PACKAGES)
+        self._cache = JsonDatabase()
+        self._cache.load(CACHE_PACKAGES)
         # set cache
-        if set(self.cache.keys()) != set(("downstream", "compare", "upstream")):
+        if set(self._cache.keys()) != set(("downstream", "compare", "upstream")):
             logging.debug("Invalid cache, purging it")
-            self.cache.clear()
-            self.cache["upstream"] = {}
-            self.cache["downstream"] = {}
-            self.cache["compare"] = {}
+            self._cache.clear()
+            self._cache["upstream"] = {}
+            self._cache["downstream"] = {}
+            self._cache["compare"] = {}
 
-    def reduce_packages(self, packages):
-        '''Keep only the give packages list'''
-        for pkg in list(self.packages):
-            if pkg not in packages:
-                self.packages.pop(pkg, None)
+    @property
+    def packages(self):
+        '''Return list of packages augmented with aliases'''
+        pkgs = []
+        for name, data in self._packages.items():
+            pkgs.append(name)
+            pkgs += self.alias(data)
+        return pkgs
 
-    def sort_packages(self):
-        '''Sort package list by name'''
-        self.packages = self.sort_dict(self.packages)
+    @property
+    def versions(self):
+        '''Return upstream versions of a package (use cache)'''
+        ver = OrderedDict()
+        for name, v_upstream, v_downstream in self.compare():
+            ver[name] = (v_upstream, v_downstream)
+        return ver
 
-    def sort_cache(self):
-        '''Sort package list by name'''
-        self.cache = self.sort_dict(self.cache)
+    def select(self, packages):
+        '''
+        Remove packages not listed in packages from the processing of
+        controller future actions
+        '''
+        packages = set(packages)
+        for name, data in self._packages.items():
+            names = set((name,)) | set(self.alias(data))
+            if len(packages & names) == 0:
+                self._packages.pop(name, None)
+
+    def sort(self):
+        '''
+        Sort packages and cache by name
+        Make packages to be treated (upgraded/displayed) by alpha order
+        '''
+        self._packages = self.sort_dict(self._packages)
+        self._cache = self.sort_dict(self._cache)
+
+    def sync(self):
+        '''
+        Synchronise local cache with external states
+        Retrieve upstream and downstream versions and store them
+        '''
+        for name, value in self._packages.items():
+            try:
+                logging.debug("Syncing versions of package %s" % name)
+                # get upstream version
+                v_upstream = self.get_version_upstream(name, value)
+                # apply eval to upstream
+                e_upstream = value.get("eval_upstream", None)
+                if e_upstream is not None:
+                    v_upstream = eval(e_upstream, {}, {"version": v_upstream})
+                    logging.debug("eval_upstream produce version: %s" % v_upstream)
+                # save upstream version
+                if self._cache["upstream"].get(name, {}).get("version", None) != v_upstream:
+                    logging.debug("caching upstream version %s" % v_upstream)
+                    self._cache["upstream"][name] = {"version": v_upstream, "epoch": int(time())}
+                else:
+                    logging.debug("already cached upstream version %s" % v_upstream)
+                # get downstream mode
+                mode = value.get("downstream", None)
+                if mode is None:
+                    logging.warning("%s: Invalid downstream mode: %s." % (name, mode))
+                    continue
+                # get downstream version
+                v_downstream = self.get_version_downstream(name, value, mode)
+                # apply eval to downstream
+                e_compare = value.get("eval_downstream", None)
+                if e_compare is not None:
+                    v_compare = eval(e_compare, {}, {"version": v_compare})
+                    logging.debug("eval_downstream produce version: %s" % v_downstream)
+                # save downstream version
+                if self._cache["downstream"].get(name, {}).get("version", None) != v_downstream:
+                    logging.debug("caching downstream version %s" % v_downstream)
+                    self._cache["downstream"][name] = {"version": v_downstream, "epoch": int(time())}
+                else:
+                    logging.debug("already cached downstream version %s" % v_downstream)
+            except Exception as exp:
+                logging.error("Sync of %s: %s" % (name, exp))
+
+    def compare(self, only_new=False, only_fresh=False):
+        '''
+        Compare versions according compare mode
+        Return an iterator over all packages and their aliases with
+        upstream and downstream versions.
+        '''
+        for name, value in self._packages.items():
+            logging.debug("Comparing versions of package %s" % name)
+            # get upstream in cache
+            v_upstream = self._cache["upstream"].get(name, {}).get("version", None)
+            if v_upstream is None:
+                logging.warning("%s: Upstream version not found in cache" % name)
+                continue
+            # get downstream in cache
+            v_downstream = self._cache["downstream"].get(name, {}).get("version", None)
+            if v_downstream is None:
+                logging.warning("%s: Downstream version not found in cache" % name)
+                continue
+            # only new version mode
+            if only_new and v_upstream == v_downstream:
+                logging.debug("%s: skipped by only new mode" % name)
+                continue
+            # only fresh version mode
+            if only_fresh:
+                last_cmp = self._cache["compare"].get(name, -1)
+                last_up = self._cache["upstream"].get(name, {}).get("epoch", 0)
+                last_down = self._cache["downstream"].get(name, {}).get("epoch", 0)
+                if (last_cmp >= last_up and last_cmp >= last_down):
+                    logging.debug("%s: skipped by only fresh mode" % name)
+                    continue
+            # save our compare in cache
+            self._cache["compare"][name] = int(time())
+            # gen main pacakge
+            yield (name, v_upstream, v_downstream)
+            # gen aliases package
+            for alias in self.alias(value):
+                yield (alias, v_upstream, v_downstream)
+
+    @staticmethod
+    def alias(pkg):
+        '''Return the list of aliases of a package'''
+        return [ al for al in pkg.get("alias", "").split(" ") if al != "" ]
 
     @staticmethod
     def sort_dict(larousse):
@@ -76,7 +183,7 @@ class VersionController(object):
 
     @staticmethod
     def get_version_upstream(name, value):
-        '''Return upstream version'''
+        '''Fetchg upstream version'''
         logging.debug("Get upstream version")
         # check upstream param
         if "url" not in value:
@@ -238,88 +345,9 @@ class VersionController(object):
         '''Return none version'''
         return ""
 
-    def sync_packages(self):
-        '''
-        Retrieve upstream and downstream versions and store them in cache
-        '''
-        for name, value in self.packages.items():
-            try:
-                logging.debug("Syncing versions of package %s" % name)
-                # get upstream version
-                v_upstream = self.get_version_upstream(name, value)
-                # apply eval to upstream
-                e_upstream = value.get("eval_upstream", None)
-                if e_upstream is not None:
-                    v_upstream = eval(e_upstream, {}, {"version": v_upstream})
-                    logging.debug("eval_upstream produce version: %s" % v_upstream)
-                # save upstream version
-                if self.cache["upstream"].get(name, {}).get("version", None) != v_upstream:
-                    logging.debug("caching upstream version %s" % v_upstream)
-                    self.cache["upstream"][name] = {"version": v_upstream, "epoch": int(time())}
-                else:
-                    logging.debug("already cached upstream version %s" % v_upstream)
-                # get downstream mode
-                mode = value.get("downstream", None)
-                if mode is None:
-                    logging.warning("%s: Invalid downstream mode: %s." % (name, mode))
-                    continue
-                # get downstream version
-                v_downstream = self.get_version_downstream(name, value, mode)
-                # apply eval to downstream
-                e_compare = value.get("eval_downstream", None)
-                if e_compare is not None:
-                    v_compare = eval(e_compare, {}, {"version": v_compare})
-                    logging.debug("eval_downstream produce version: %s" % v_downstream)
-                # save downstream version
-                if self.cache["downstream"].get(name, {}).get("version", None) != v_downstream:
-                    logging.debug("caching downstream version %s" % v_downstream)
-                    self.cache["downstream"][name] = {"version": v_downstream, "epoch": int(time())}
-                else:
-                    logging.debug("already cached downstream version %s" % v_downstream)
-            except Exception as exp:
-                logging.error("Sync of %s: %s" % (name, exp))
-
-    def compare_versions(self, only_new=False, only_fresh=False):
-        '''
-        Compare versions according compare mode
-        Return a generator!
-        '''
-        for name, value in self.packages.items():
-            logging.debug("Comparing versions of package %s" % name)
-            # get upstream in cache
-            v_upstream = self.cache["upstream"].get(name, {}).get("version", None)
-            if v_upstream is None:
-                logging.warning("%s: Upstream version not found in cache" % name)
-                continue
-            # get downstream in cache
-            v_downstream = self.cache["downstream"].get(name, {}).get("version", None)
-            if v_downstream is None:
-                logging.warning("%s: Downstream version not found in cache" % name)
-                continue
-            # only new version mode
-            if only_new and v_upstream == v_downstream:
-                logging.debug("%s: skipped by only new mode" % name)
-                continue
-            # only fresh version mode
-            if only_fresh:
-                last_cmp = self.cache["compare"].get(name, -1)
-                last_up = self.cache["upstream"].get(name, {}).get("epoch", 0)
-                last_down = self.cache["downstream"].get(name, {}).get("epoch", 0)
-                if (last_cmp >= last_up and last_cmp >= last_down):
-                    logging.debug("%s: skipped by only fresh mode" % name)
-                    continue
-            # save our compare in cache
-            self.cache["compare"][name] = int(time())
-            # gen main pacakge
-            yield (name, v_upstream, v_downstream)
-            # gen aliases package
-            for alias in value.get("alias", "").split(" "):
-                if alias != "":
-                    yield (alias, v_upstream, v_downstream)
-
     def print_names(self):
         '''Print packages name'''
-        for name in self.packages.keys():
+        for name in self.packages:
             print(name)
 
     @staticmethod
@@ -330,7 +358,7 @@ class VersionController(object):
 
     def print_versions(self, only_new=False, only_fresh=False):
         '''Print versions'''
-        for name, v_upstream, v_downstream in self.compare_versions(only_new, only_fresh):
+        for name, v_upstream, v_downstream in self.compare(only_new, only_fresh):
             self.print_version(name, v_upstream, v_downstream)
 
     def print_version(self, name, v1, v2=None):
@@ -353,7 +381,7 @@ class VersionController(object):
         if v2 is not "":
             # print separator
             toprint += "%s|" % c_blue
-            origin = self.packages.get(name,{}).get("downstream", "downstream")
+            origin = self._packages.get(name,{}).get("downstream", "downstream")
             toprint += " %s%s: %s" % (c_compare, origin, v2)
         toprint += c_reset
         print(toprint)
