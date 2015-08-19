@@ -101,6 +101,11 @@ SOURCES
 =======
 *archversion* sources are available on github [#]_.
 
+Once you get the git tree, you can build a test package:
+
+|  ./bootstrap
+|  ./configure
+|  make pkg
 
 LICENSE
 =======
