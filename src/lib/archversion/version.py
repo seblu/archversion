@@ -20,7 +20,7 @@
 '''Version Module'''
 
 
-from archversion import USER_AGENT, CONFIG_PACKAGES, CACHE_PACKAGES
+from archversion import HTTP_HEADERS, CONFIG_PACKAGES, CACHE_PACKAGES
 from archversion.config import BaseConfigFile
 from archversion.database import JsonDatabase
 from archversion.error import InvalidConfigFile, VersionNotFound
@@ -204,7 +204,7 @@ class VersionController(object):
             try:
                 logging.debug("Requesting url: %s (try %d/%d)" % (url, n, ntry))
                 logging.debug("Timeout is %s" % timeout)
-                url_req = Request(url, headers={"User-Agent": USER_AGENT})
+                url_req = Request(url, headers=HTTP_HEADERS)
                 url_fd = urlopen(url_req, timeout=timeout)
                 logging.debug("Version regex: %s" % regex)
                 v = re.findall(regex, url_fd.read().decode("utf-8"))
@@ -271,7 +271,7 @@ class VersionController(object):
             for repo in repos:
                 url = "http://www.archlinux.org/packages/%s/%s/%s/json" % (
                     repo, arch, name)
-                url_req = Request(url, headers={"User-Agent": USER_AGENT})
+                url_req = Request(url, headers=HTTP_HEADERS)
                 logging.debug("Requesting url: %s" % url)
                 logging.debug("Timeout is %s" % timeout)
                 try:
@@ -292,7 +292,7 @@ class VersionController(object):
             # retrieve config timeout
             timeout = float(value["timeout"]) if "timeout" in value else None
             url = "http://aur.archlinux.org/rpc.php?type=info&arg=%s" % name
-            url_req = Request(url, headers={"User-Agent": USER_AGENT})
+            url_req = Request(url, headers=HTTP_HEADERS)
             logging.debug("Requesting url: %s" % url)
             logging.debug("Timeout is %s" % timeout)
             url_fd = urlopen(url_req, timeout=timeout)

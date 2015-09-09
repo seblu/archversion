@@ -39,5 +39,11 @@ CACHE_PACKAGES = "packages.cache"
 # Annouced version (from autoconf)
 VERSION = "@VERSION@"
 
-# user agent using with http request
-USER_AGENT = "archversion v%s" % VERSION
+# Http request headers
+# Advertise archversion version
+# Try to disable caching
+HTTP_HEADERS = {
+	"User-Agent": "archversion v%s" % VERSION,
+	"Pragma": "no-cache",
+	"Cache-Control": "no-cache, no-store, must-revalidate"
+}
