@@ -10,6 +10,6 @@ pkg: export PKGDEST = $(CURDIR)
 pkg:
 	cd misc && makepkg
 
-test: export PYTHONPATH = $(CURDIR)/lib
+test: export PYTHONPATH = $(CURDIR)/src/lib
 test:
 	-$(CURDIR)/src/bin/archversion
