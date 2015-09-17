@@ -85,11 +85,12 @@ class VersionController(object):
 
     def sort(self):
         '''
-        Sort packages and cache by name
-        Make packages to be treated (upgraded/displayed) by alpha order
+        Sort packages by name
+        Make packages to be upgraded/displayed by alpha order
         '''
         self._packages = self.sort_dict(self._packages)
-        self._cache = self.sort_dict(self._cache)
+        # do not sort self._cache by recreating the cache object
+        # destructor is used to save the cache content
 
     def sync(self):
         '''
