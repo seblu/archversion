@@ -208,7 +208,7 @@ class VersionController(object):
                 url_req = Request(url, headers=HTTP_HEADERS)
                 url_fd = urlopen(url_req, timeout=timeout)
                 logging.debug("Version regex: %s" % regex)
-                v = re.findall(regex, url_fd.read().decode("utf-8"))
+                v = re.findall(regex, url_fd.read().decode("utf-8", "ignore"))
                 if v is None or len(v) == 0:
                     raise VersionNotFound("No regex match on upstream")
                 # remove duplicity
@@ -277,7 +277,7 @@ class VersionController(object):
                 logging.debug("Timeout is %s" % timeout)
                 try:
                     url_fd = urlopen(url_req, timeout=timeout)
-                    d = json.loads(url_fd.read().decode("utf-8"))
+                    d = json.loads(url_fd.read().decode("utf-8", "ignore"))
                     v = d["pkgver"]
                     logging.debug("Archweb version is : %s" % v)
                     return v
@@ -297,7 +297,7 @@ class VersionController(object):
             logging.debug("Requesting url: %s" % url)
             logging.debug("Timeout is %s" % timeout)
             url_fd = urlopen(url_req, timeout=timeout)
-            d = json.loads(url_fd.read().decode("utf-8"))
+            d = json.loads(url_fd.read().decode("utf-8", "ignore"))
             if "version" not in d or d["version"] != 1:
                 raise VersionNotFound("Unsupported AUR version")
             if len(d["results"]) == 0:
