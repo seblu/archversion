@@ -183,7 +183,7 @@ class VersionController(object):
 
     @staticmethod
     def get_version_upstream(name, value):
-        '''Fetchg upstream version'''
+        '''Fetch upstream version'''
         logging.debug("Get upstream version")
         # check upstream param
         if "url" not in value:
