@@ -78,7 +78,7 @@ class VersionController(object):
         controller future actions
         '''
         packages = set(packages)
-        for name, data in self._packages.items():
+        for name, data in OrderedDict(self._packages).items():
             names = set((name,)) | set(self.alias(data))
             if len(packages & names) == 0:
                 self._packages.pop(name, None)
