@@ -176,6 +176,9 @@ def command_sendmail(args, vctrl):
         from_ = config["mail"].get("from", "Archversion <noreply@archlinux.org>")
         subject = config["mail"].get("subject", "Archversion Report")
         smtp = config["smtp"]["host"]
+        login = config["smtp"].get("login")
+        password = config["smtp"].get("password")
+        starttls = config["smtp"].get("starttls", "false").lower() in ("true", "yes")
     except KeyError as exp:
         logging.error("Invalid sendmail config: %s" % exp)
         exit(1)
@@ -197,6 +200,10 @@ def command_sendmail(args, vctrl):
     # send the mail
     try:
         s = SMTP(smtp)
+        if starttls:
+            s.starttls()
+        if login:
+            s.login(login, password)
         s.send_message(msg)
         s.quit()
     except Exception as exp:
