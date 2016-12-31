@@ -46,7 +46,7 @@ url =
 
 # Exclude upstream versions matching this regex before looking for the last
 # Useful to remove release candiates and beta versions
-# Default is .*(rc|beta|alpha).*
+# Default is .*(rc|beta|alpha|pre).*
 # Set to empty string to not exclude
 #regex_exclude =
 
