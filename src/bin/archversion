@@ -180,8 +180,7 @@ def command_sendmail(args, vctrl):
         password = config["smtp"].get("password")
         starttls = config["smtp"].get("starttls", "false").lower() in ("true", "yes")
     except KeyError as exp:
-        logging.error("Invalid sendmail config: %s" % exp)
-        exit(1)
+        raise BaseError("Unable to load sendmail config") from exp
     # capture a report
     stdout = StringIO()
     stdout_bak = sys.stdout
@@ -207,8 +206,7 @@ def command_sendmail(args, vctrl):
         s.send_message(msg)
         s.quit()
     except Exception as exp:
-        logging.error("Sendmail fail: %s" % exp)
-        exit(1)
+        raise BaseError("Unable to send mail") from exp
 
 def command_update(args, vctrl):
     '''Handle update command call'''
