@@ -23,7 +23,7 @@
 from archversion import VERSION, CONFIG_SENDMAIL
 from archversion.config import BaseConfigFile
 from archversion.error import BaseError, MissingConfigFile, NoSuchFile
-from archversion.error import ERR_FATAL, ERR_ABORT, ERR_UNKNOWN
+from archversion.error import ERR_FATAL, ERR_ABORT
 from archversion.pacman import parse_pkgbuild, pkgbuild_set_version, pkgbuild_update_checksums
 from archversion.version import VersionController
 from email.mime.text import MIMEText
@@ -268,15 +268,11 @@ def main():
         return args.func(args, vctrl)
     except KeyboardInterrupt:
         exit(ERR_ABORT)
-    except BaseError as exp:
-        logging.error(exp)
-        exit(ERR_FATAL)
     except Exception as exp:
-        logging.error("Unknown error. Please report it with --debug.")
-        logging.error(exp)
+        logging.critical(exp)
         if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
             raise
-        exit(ERR_UNKNOWN)
+        exit(ERR_FATAL)
 
 if __name__ == '__main__':
     main()
