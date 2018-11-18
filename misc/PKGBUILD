@@ -1,8 +1,8 @@
 # Maintainer: Sébastien Luttringer
 
 pkgname=archversion-git
-pkgver=$(git log --pretty=format:''|wc -l)
-pkgrel=1
+pkgver=$(git rev-list --count HEAD)
+pkgrel=$(date +%y%m%d)
 pkgdesc='Archlinux Version Controller (Git version)'
 arch=('any')
 url='https://github.com/seblu/archversion'
