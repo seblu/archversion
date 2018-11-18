@@ -1,11 +1,23 @@
 [sendmail]
-# Options in this section are about sendmail command
 
-# Mail address
+# To mail address (mandatory)
 # to = archversion@gmail.com
+
+# From mail address
+# from = archversion@gmail.com
+# default value is archversion
 
 # Mail subject
 # subject = Archversion report
+# default value is "Archversion report"
 
-# SMTP server
-# smtp = smtp.honeypot.org
+# SMTP server address (mandatory)
+# host = smtp.honeypot.org
+
+# SMTP server port
+# port = 465
+# default value is 25
+
+# SMTP server tls mode
+# tls = no | starttls | yes
+# default value is no

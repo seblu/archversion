@@ -30,7 +30,7 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from io import StringIO
 from pprint import pprint
-from smtplib import SMTP
+from smtplib import SMTP, SMTP_SSL
 import argparse
 import logging
 import os
@@ -173,14 +173,19 @@ def command_sendmail(args, vctrl):
     # check args
     try:
         to = config["mail"]["to"]
-        from_ = config["mail"].get("from", "Archversion <noreply@archlinux.org>")
+        from_ = config["mail"].get("from", "archversion")
         subject = config["mail"].get("subject", "Archversion Report")
-        smtp = config["smtp"]["host"]
+        host = config["smtp"]["host"]
+        port = config["smtp"].get("port", "25")
         login = config["smtp"].get("login")
         password = config["smtp"].get("password")
-        starttls = config["smtp"].get("starttls", "false").lower() in ("true", "yes")
+        tls = config["smtp"].get("tls", "no").lower()
     except KeyError as exp:
         raise BaseError("Unable to load sendmail config") from exp
+    # check tls param
+    tls_values = ("yes", "no", "starttls")
+    if tls not in tls_values:
+        raise BaseError("Invalid SMTP tls value: %s. Should be %s." % (tls, "|".join(tls_values)))
     # capture a report
     stdout = StringIO()
     stdout_bak = sys.stdout
@@ -198,13 +203,18 @@ def command_sendmail(args, vctrl):
     msg["Date"] = formatdate(localtime=True)
     # send the mail
     try:
-        s = SMTP(smtp)
-        if starttls:
-            s.starttls()
+        con = SMTP_SSL() if tls == "yes" else SMTP()
+        # since python3.7 we need to set host to establish ssl/tls connections
+        # this cannot be done in SMTP class contructor because it try to
+        # initiate the connection at that time
+        con._host = host
+        con.connect(host, port)
+        if tls == "starttls":
+            con.starttls()
         if login:
-            s.login(login, password)
-        s.send_message(msg)
-        s.quit()
+            con.login(login, password)
+        con.send_message(msg)
+        con.quit()
     except Exception as exp:
         raise BaseError("Unable to send mail") from exp
 
