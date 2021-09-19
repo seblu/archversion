@@ -105,7 +105,7 @@ class VersionController(object):
                 # apply eval to upstream
                 e_upstream = value.get("eval_upstream", None)
                 if e_upstream is not None:
-                    v_upstream = eval(e_upstream, {}, {"version": v_upstream})
+                    v_upstream = eval(e_upstream, {"re": re}, {"version": v_upstream})
                     logging.debug("eval_upstream produce version: %s" % v_upstream)
                 # save upstream version
                 if self._cache["upstream"].get(name, {}).get("version", None) != v_upstream:
@@ -123,7 +123,7 @@ class VersionController(object):
                 # apply eval to downstream
                 e_downstream = value.get("eval_downstream", None)
                 if e_downstream is not None:
-                    v_downstream = eval(e_downstream, {}, {"version": v_downstream})
+                    v_downstream = eval(e_downstream, {"re": re}, {"version": v_downstream})
                     logging.debug("eval_downstream produce version: %s" % v_downstream)
                 # save downstream version
                 if self._cache["downstream"].get(name, {}).get("version", None) != v_downstream:
