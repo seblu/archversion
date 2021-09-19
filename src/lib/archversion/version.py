@@ -379,7 +379,7 @@ class VersionController(object):
         # print upstream
         toprint += " %sup: %s " % (c_yellow, v1)
         # print downstream
-        if v2 is not "":
+        if v2 != "":
             # print separator
             toprint += "%s|" % c_blue
             origin = self._packages.get(name,{}).get("downstream", "downstream")
