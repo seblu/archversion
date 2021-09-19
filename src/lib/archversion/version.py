@@ -121,9 +121,9 @@ class VersionController(object):
                 # get downstream version
                 v_downstream = self.get_version_downstream(name, value, mode)
                 # apply eval to downstream
-                e_compare = value.get("eval_downstream", None)
-                if e_compare is not None:
-                    v_compare = eval(e_compare, {}, {"version": v_compare})
+                e_downstream = value.get("eval_downstream", None)
+                if e_downstream is not None:
+                    v_downstream = eval(e_downstream, {}, {"version": v_downstream})
                     logging.debug("eval_downstream produce version: %s" % v_downstream)
                 # save downstream version
                 if self._cache["downstream"].get(name, {}).get("version", None) != v_downstream:
